@@ -1,0 +1,644 @@
+{
+  "name": "企业级Web应用程序",
+  "uuid": "5da4ecc2-be9f-4f8c-85df-52bced574a2b",
+  "type": "ComplexWorkable",
+  "logic_description": "多层次企业应用平台，包含前后端、数据库、DevOps和文档系统",
+  "children": [
+    {
+      "name": "前端系统",
+      "uuid": "4825c908-dcd6-4c38-931d-61c6657f77db",
+      "type": "ComplexWorkable",
+      "logic_description": "Web应用程序的前端实现",
+      "children": [
+        {
+          "name": "UI组件",
+          "uuid": "30c3e484-700c-430c-9d55-7aac64d1d3fa",
+          "type": "ComplexWorkable",
+          "logic_description": "可重用的前端UI组件库",
+          "children": [
+            {
+              "name": "按钮组件",
+              "uuid": "128ea3a0-79e1-4f21-aae8-4d7caf832693",
+              "type": "ComplexWorkable",
+              "logic_description": "各种类型和样式的按钮实现",
+              "children": [
+                {
+                  "name": "主按钮",
+                  "uuid": "bd266aaf-6486-4358-a9a2-31bebb02c78c",
+                  "type": "SimpleWorkable",
+                  "logic_description": "具有高视觉重要性的主要操作按钮",
+                  "children": [],
+                  "locals": [],
+                  "content_type": "code"
+                },
+                {
+                  "name": "次按钮",
+                  "uuid": "8a7171bb-274b-418c-b5cb-182f16f34141",
+                  "type": "SimpleWorkable",
+                  "logic_description": "次要操作的按钮样式",
+                  "children": [],
+                  "locals": [],
+                  "content_type": "code"
+                },
+                {
+                  "name": "图标按钮",
+                  "uuid": "0b8b835c-c7a2-4691-b078-3539591f895e",
+                  "type": "SimpleWorkable",
+                  "logic_description": "仅包含图标的轻量级按钮",
+                  "children": [],
+                  "locals": [],
+                  "content_type": "code"
+                },
+                {
+                  "name": "加载按钮",
+                  "uuid": "0fbf9ae3-0566-4e64-bbdc-b6240ea07ff8",
+                  "type": "SimpleWorkable",
+                  "logic_description": "具有加载状态的交互按钮",
+                  "children": [],
+                  "locals": [],
+                  "content_type": "code"
+                }
+              ],
+              "locals": [
+                {
+                  "name": "按钮组件_content",
+                  "uuid": "744a3311-8b1c-42ef-a58f-f113b46587c5",
+                  "type": "SimpleWorkable",
+                  "logic_description": "各种类型和样式的按钮实现",
+                  "children": [],
+                  "locals": [],
+                  "content_type": "code"
+                }
+              ]
+            },
+            {
+              "name": "表单组件",
+              "uuid": "32532d30-2ddf-4ee4-a911-d0367b4e439e",
+              "type": "SimpleWorkable",
+              "logic_description": "数据输入和验证的表单控件",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "导航组件",
+              "uuid": "280b47e5-90d7-4099-a5c4-45ae8e6095f1",
+              "type": "SimpleWorkable",
+              "logic_description": "应用程序导航菜单和路由",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "数据表格",
+              "uuid": "ad68bf6e-5372-4d8b-b2c8-0528dd0930c4",
+              "type": "SimpleWorkable",
+              "logic_description": "用于展示和操作表格数据的组件",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "弹窗组件",
+              "uuid": "e24eed97-44ca-4db7-8fed-ae15fbd954d2",
+              "type": "SimpleWorkable",
+              "logic_description": "模态框和对话框实现",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            }
+          ],
+          "locals": []
+        },
+        {
+          "name": "页面模块",
+          "uuid": "2057e31e-18eb-448d-bedb-585e709fba99",
+          "type": "ComplexWorkable",
+          "logic_description": "应用程序的各个页面实现",
+          "children": [
+            {
+              "name": "登录页面",
+              "uuid": "55fde304-3ace-4904-9782-e7af2ce80483",
+              "type": "SimpleWorkable",
+              "logic_description": "用户认证和登录流程",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "仪表盘",
+              "uuid": "855bb563-7272-4aa8-8a54-b28254a79519",
+              "type": "SimpleWorkable",
+              "logic_description": "系统主仪表盘和数据概览",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "用户管理",
+              "uuid": "b10c1bd9-6471-4b50-919e-9b18cff84a11",
+              "type": "SimpleWorkable",
+              "logic_description": "用户信息管理和权限设置",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "报表页面",
+              "uuid": "6205aa05-02e4-48ee-aedf-1ea940912078",
+              "type": "SimpleWorkable",
+              "logic_description": "数据统计和报表展示",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "系统设置",
+              "uuid": "f4581995-e5a5-4447-9f14-ab75d03cb491",
+              "type": "SimpleWorkable",
+              "logic_description": "应用程序配置和个性化设置",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            }
+          ],
+          "locals": []
+        },
+        {
+          "name": "前端服务",
+          "uuid": "eb618f2a-1146-470e-938e-e4fd1995a64f",
+          "type": "ComplexWorkable",
+          "logic_description": "前端与后端交互的服务层",
+          "children": [
+            {
+              "name": "API客户端",
+              "uuid": "e9704052-59e6-4456-bd3d-0c8a3dabde28",
+              "type": "SimpleWorkable",
+              "logic_description": "与后端API通信的客户端实现",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "认证服务",
+              "uuid": "fd7cce7e-3eaf-4f0b-abc0-b6e234193ff8",
+              "type": "SimpleWorkable",
+              "logic_description": "管理用户会话和认证状态",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "状态管理",
+              "uuid": "04fdf4d7-af5e-4646-9798-c7c9d00792f4",
+              "type": "SimpleWorkable",
+              "logic_description": "应用程序状态和数据流管理",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "缓存服务",
+              "uuid": "90e2a4f6-be82-49bc-be9d-4cd6c93a6218",
+              "type": "SimpleWorkable",
+              "logic_description": "客户端数据缓存和持久化",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "通知服务",
+              "uuid": "fc54e030-a21d-4422-a478-2661b355bd51",
+              "type": "SimpleWorkable",
+              "logic_description": "用户通知和消息推送",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            }
+          ],
+          "locals": []
+        }
+      ],
+      "locals": [
+        {
+          "name": "样式指南",
+          "uuid": "8756d14b-88ab-4d21-b00a-f42712160c38",
+          "type": "SimpleWorkable",
+          "logic_description": "前端样式规范和主题配置",
+          "children": [],
+          "locals": [],
+          "content_type": "text"
+        }
+      ]
+    },
+    {
+      "name": "后端系统",
+      "uuid": "b5a11b7f-bbb6-4ba0-8fc5-60d7294437ba",
+      "type": "ComplexWorkable",
+      "logic_description": "Web应用程序的服务器端和业务逻辑实现",
+      "children": [
+        {
+          "name": "API层",
+          "uuid": "60d9a5c7-42be-4773-a7e8-2afaeb6ee48b",
+          "type": "ComplexWorkable",
+          "logic_description": "应用程序接口定义和实现",
+          "children": [
+            {
+              "name": "用户API",
+              "uuid": "ab840991-b84f-4f72-9b8d-2079adc6e805",
+              "type": "SimpleWorkable",
+              "logic_description": "用户相关操作的接口集合",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "认证API",
+              "uuid": "3f479f18-d410-42a1-aa24-77d1914e125e",
+              "type": "SimpleWorkable",
+              "logic_description": "用户认证和授权接口",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "数据API",
+              "uuid": "f2dd356f-2186-4adf-803f-30b54ab6385e",
+              "type": "SimpleWorkable",
+              "logic_description": "数据查询和操作接口",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "管理API",
+              "uuid": "4078063a-6257-48bd-93bc-9b103ee47ae6",
+              "type": "SimpleWorkable",
+              "logic_description": "系统管理和配置接口",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "报表API",
+              "uuid": "50ef8024-e2bb-4388-80d2-269f9fd84411",
+              "type": "SimpleWorkable",
+              "logic_description": "数据统计和报表生成接口",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            }
+          ],
+          "locals": []
+        },
+        {
+          "name": "服务层",
+          "uuid": "4e7a88fd-b7f7-4f11-b8cd-c94dbfc60cfe",
+          "type": "ComplexWorkable",
+          "logic_description": "业务逻辑和领域服务实现",
+          "children": [
+            {
+              "name": "用户服务",
+              "uuid": "b6a60c91-1d4f-4e80-a93d-72707800bc3a",
+              "type": "ComplexWorkable",
+              "logic_description": "用户管理和权限控制服务",
+              "children": [
+                {
+                  "name": "用户创建",
+                  "uuid": "f43b9fbf-e7e6-4085-9fdb-6c3aa86fa5cb",
+                  "type": "SimpleWorkable",
+                  "logic_description": "新用户注册和初始化逻辑",
+                  "children": [],
+                  "locals": [],
+                  "content_type": "code"
+                },
+                {
+                  "name": "用户验证",
+                  "uuid": "7297538c-b1bb-4fe5-987a-e5b75642a840",
+                  "type": "SimpleWorkable",
+                  "logic_description": "用户信息验证和安全检查",
+                  "children": [],
+                  "locals": [],
+                  "content_type": "code"
+                },
+                {
+                  "name": "权限控制",
+                  "uuid": "701a742f-25ad-4417-8a05-302f4a623cfc",
+                  "type": "SimpleWorkable",
+                  "logic_description": "基于角色的访问控制实现",
+                  "children": [],
+                  "locals": [],
+                  "content_type": "code"
+                },
+                {
+                  "name": "用户配置",
+                  "uuid": "757fc838-226d-4d99-a4ab-c33e57d78871",
+                  "type": "SimpleWorkable",
+                  "logic_description": "用户个性化设置管理",
+                  "children": [],
+                  "locals": [],
+                  "content_type": "code"
+                }
+              ],
+              "locals": [
+                {
+                  "name": "用户服务_content",
+                  "uuid": "b22956a3-fcd1-4953-8619-ee684ae4f230",
+                  "type": "SimpleWorkable",
+                  "logic_description": "用户管理和权限控制服务",
+                  "children": [],
+                  "locals": [],
+                  "content_type": "code"
+                }
+              ]
+            },
+            {
+              "name": "认证服务",
+              "uuid": "ea2d7a61-d73f-430c-a9eb-17669b36a07a",
+              "type": "SimpleWorkable",
+              "logic_description": "用户认证和会话管理",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "数据服务",
+              "uuid": "72dc69c2-ca35-47a5-8fe1-2a99f3649048",
+              "type": "SimpleWorkable",
+              "logic_description": "数据访问和处理服务",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "通知服务",
+              "uuid": "a82c8151-0d64-4dd8-a180-eb2f5fdcba26",
+              "type": "SimpleWorkable",
+              "logic_description": "消息通知和事件处理",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "报表服务",
+              "uuid": "3950b8c9-1962-4afa-8dd0-a97f239f03cb",
+              "type": "SimpleWorkable",
+              "logic_description": "数据统计和报表生成",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            }
+          ],
+          "locals": []
+        },
+        {
+          "name": "数据访问层",
+          "uuid": "b59beb49-579b-4184-a59d-55447cb1bfbb",
+          "type": "ComplexWorkable",
+          "logic_description": "数据库交互和ORM实现",
+          "children": [
+            {
+              "name": "用户DAO",
+              "uuid": "8cda985e-d13a-4865-a3f8-310127ff37c2",
+              "type": "SimpleWorkable",
+              "logic_description": "用户数据访问对象",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "配置DAO",
+              "uuid": "08319adc-2fa5-49be-ac1a-1b5119160bb3",
+              "type": "SimpleWorkable",
+              "logic_description": "系统配置数据访问",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "报表DAO",
+              "uuid": "265b617a-34f9-43ef-96e1-d69ad17793a2",
+              "type": "SimpleWorkable",
+              "logic_description": "报表数据访问和查询",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "事务管理",
+              "uuid": "8827b377-72d9-4f72-9a93-43d0050cd00d",
+              "type": "SimpleWorkable",
+              "logic_description": "数据库事务控制",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "缓存管理",
+              "uuid": "201ff6f2-2741-461c-a7c2-63abd431c7d6",
+              "type": "SimpleWorkable",
+              "logic_description": "数据缓存和性能优化",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            }
+          ],
+          "locals": []
+        }
+      ],
+      "locals": [
+        {
+          "name": "后端配置",
+          "uuid": "ee059758-c322-467c-895e-063cdb36bf6f",
+          "type": "SimpleWorkable",
+          "logic_description": "后端系统配置和环境设置",
+          "children": [],
+          "locals": [],
+          "content_type": "text"
+        }
+      ]
+    },
+    {
+      "name": "数据库系统",
+      "uuid": "8f8b15b1-c36a-4042-9775-1192a92887b7",
+      "type": "ComplexWorkable",
+      "logic_description": "应用程序的数据存储和管理系统",
+      "children": [
+        {
+          "name": "数据库结构",
+          "uuid": "8d42caea-f706-45c6-b489-1e7cb4adeac3",
+          "type": "ComplexWorkable",
+          "logic_description": "数据库表结构和关系定义",
+          "children": [
+            {
+              "name": "用户表",
+              "uuid": "806b2254-3997-45ac-8982-a6ee79c43913",
+              "type": "SimpleWorkable",
+              "logic_description": "存储用户账户和个人信息",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "角色表",
+              "uuid": "5a665119-3c77-4de4-a16f-85a1e72f7b70",
+              "type": "SimpleWorkable",
+              "logic_description": "用户角色和权限定义",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "配置表",
+              "uuid": "ce4ff8dd-fb62-45f3-8f32-199f3396b9ec",
+              "type": "SimpleWorkable",
+              "logic_description": "系统配置和参数存储",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "日志表",
+              "uuid": "68ba9865-9ec8-4246-be06-a38bdf25cc12",
+              "type": "SimpleWorkable",
+              "logic_description": "系统操作和审计日志",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "数据表",
+              "uuid": "54d8fc76-b4a3-4c9b-ac9d-cc0d8369379a",
+              "type": "SimpleWorkable",
+              "logic_description": "业务数据存储",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            }
+          ],
+          "locals": []
+        },
+        {
+          "name": "存储过程",
+          "uuid": "03d1f359-11d5-47e6-b1e1-6152d4774f22",
+          "type": "ComplexWorkable",
+          "logic_description": "数据库存储过程和函数",
+          "children": [
+            {
+              "name": "用户管理过程",
+              "uuid": "4a823f36-a430-4a55-b862-5e4b8835b145",
+              "type": "SimpleWorkable",
+              "logic_description": "用户数据管理存储过程",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "数据聚合过程",
+              "uuid": "3f4da123-d3ad-49b0-ae2f-14bf82d92d25",
+              "type": "SimpleWorkable",
+              "logic_description": "数据统计和聚合计算",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "审计过程",
+              "uuid": "1f40aec8-d07c-41ab-8003-8d9d88127f6f",
+              "type": "SimpleWorkable",
+              "logic_description": "系统审计和日志记录",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "数据清理过程",
+              "uuid": "90ff289c-96cd-4358-b0a4-7ee83541c0de",
+              "type": "SimpleWorkable",
+              "logic_description": "数据归档和清理操作",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "报表生成过程",
+              "uuid": "5c1374a9-557c-46a6-bf59-c9d1d68bda57",
+              "type": "SimpleWorkable",
+              "logic_description": "复杂报表数据生成",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            }
+          ],
+          "locals": []
+        },
+        {
+          "name": "索引和优化",
+          "uuid": "e4c26eed-1d05-41b4-8b8f-5e3150c8c7e5",
+          "type": "ComplexWorkable",
+          "logic_description": "数据库索引和性能优化配置",
+          "children": [
+            {
+              "name": "主键索引",
+              "uuid": "0802774b-7e3b-43b6-bced-26a56e1da482",
+              "type": "SimpleWorkable",
+              "logic_description": "表主键索引定义",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "外键索引",
+              "uuid": "e24bb3ae-9c2b-47ec-902f-48e299434f0d",
+              "type": "SimpleWorkable",
+              "logic_description": "表关系和外键索引",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "查询索引",
+              "uuid": "37db9b50-30aa-4b2b-ba7e-cfd7c5607ab0",
+              "type": "SimpleWorkable",
+              "logic_description": "常用查询性能优化索引",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "全文索引",
+              "uuid": "09d5206b-e847-4b70-984b-dc89c683a113",
+              "type": "SimpleWorkable",
+              "logic_description": "文本搜索全文索引",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            },
+            {
+              "name": "性能优化配置",
+              "uuid": "78870937-3802-4ce6-8e48-9bbccc87ada4",
+              "type": "SimpleWorkable",
+              "logic_description": "数据库性能参数设置",
+              "children": [],
+              "locals": [],
+              "content_type": "code"
+            }
+          ],
+          "locals": []
+        }
+      ],
+      "locals": [
+        {
+          "name": "数据库配置",
+          "uuid": "dc5b7d53-e44c-4c2c-823d-17b36b9d6d6a",
+          "type": "SimpleWorkable",
+          "logic_description": "数据库连接和配置信息",
+          "children": [],
+          "locals": [],
+          "content_type": "text"
+        }
+      ]
+    }
+  ],
+  "locals": []
+}
