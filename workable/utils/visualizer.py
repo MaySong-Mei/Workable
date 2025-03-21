@@ -11,7 +11,7 @@ from workable.core.exceptions import VisualizationError
 # 避免循环导入
 if TYPE_CHECKING:
     from workable.core.manager import WorkableManager
-    from workable.core.workable import Workable, SimpleWorkable, ComplexWorkable
+    from workable.core.workable import Workable
 
 class WorkableVisualizer:
     """负责生成各种Workable可视化格式的工具类"""
@@ -168,32 +168,31 @@ class WorkableVisualizer:
             树形结构的字典
         """
         try:
-            from workable.core.workable import SimpleWorkable, ComplexWorkable
-            
             result = {
                 "name": workable.name,
                 "uuid": workable.uuid,
-                "type": workable.__class__.__name__,
+                "type": "SimpleWorkable" if workable.is_atom() else "ComplexWorkable",
                 "logic_description": workable.logic_description,
                 "children": [],
                 "locals": []
             }
             
-            # 处理SimpleWorkable特有属性
-            if isinstance(workable, SimpleWorkable):
+            # 添加简单工作单元特有属性
+            if workable.is_atom():
                 result["content_type"] = workable.content_type
                 
-            # 处理ComplexWorkable
-            elif isinstance(workable, ComplexWorkable):
+            # 处理复杂工作单元
+            elif workable.is_complex():
                 # 添加子Workable
                 for child_uuid, child in workable.child_workables.items():
                     child_tree = self.generate_tree(child)
                     result["children"].append(child_tree)
-                
-                # 添加本地Workable
-                for local_uuid, local in workable.content.workables.items():
-                    local_tree = self.generate_tree(local)
-                    result["locals"].append(local_tree)
+            
+            # 添加本地Workable (对所有类型)
+            for local_uuid, local in workable.local_workables.items():
+                local_tree = self.generate_tree(local)
+                local_tree["is_local"] = True
+                result["locals"].append(local_tree)
                     
             return result
         except Exception as e:
@@ -246,32 +245,34 @@ class WorkableVisualizer:
             branch: 分支字符
             lines: 结果行列表
         """
-        from workable.core.workable import SimpleWorkable, ComplexWorkable
+        # 确定工作单元类型
+        workable_type = "SimpleWorkable" if workable.is_atom() else "ComplexWorkable"
         
-        # 节点信息
-        node_info = workable.name
+        # 检查是否为本地工作单元
+        is_local = hasattr(workable, 'is_local') and workable.is_local
+        local_mark = " [LOCAL]" if is_local else ""
         
-        # 显示节点类型
-        type_info = workable.__class__.__name__
-        lines.append(f"{prefix}{branch}{node_info} ({type_info})")
+        # 添加当前节点
+        lines.append(f"{prefix}{branch}{workable.name} ({workable_type}){local_mark}")
         
-        if isinstance(workable, ComplexWorkable):
-            # 显示本地Workable
-            local_count = len(workable.content.workables)
-            for i, (local_uuid, local) in enumerate(workable.content.workables.items()):
-                is_last = (i == local_count - 1) and (len(workable.child_workables) == 0)
-                new_prefix = prefix + ("    " if is_last else "│   ")
-                new_branch = "└── " if is_last else "├── "
-                local_info = f"{local.name} ({local.__class__.__name__}) [LOCAL]"
-                lines.append(f"{prefix}{new_branch}{local_info}")
-            
-            # 显示子Workable
-            child_count = len(workable.child_workables)
-            for i, (child_uuid, child) in enumerate(workable.child_workables.items()):
-                is_last = i == child_count - 1
-                new_prefix = prefix + ("    " if is_last else "│   ")
-                new_branch = "└── " if is_last else "├── "
-                self._generate_ascii_tree_recursive(child, new_prefix, new_branch, lines)
+        # 计算子节点的前缀
+        next_prefix = prefix + ("    " if branch == "└── " else "│   ")
+        
+        # 先处理本地工作单元
+        if workable.local_workables:
+            local_items = list(workable.local_workables.items())
+            for i, (local_uuid, local) in enumerate(local_items):
+                is_last_local = (i == len(local_items) - 1) and (not workable.is_complex() or not workable.child_workables)
+                local_branch = "└── " if is_last_local else "├── "
+                self._generate_ascii_tree_recursive(local, next_prefix, local_branch, lines)
+        
+        # 再处理子工作单元 (仅复杂工作单元)
+        if workable.is_complex() and workable.child_workables:
+            child_items = list(workable.child_workables.items())
+            for i, (child_uuid, child) in enumerate(child_items):
+                is_last_child = (i == len(child_items) - 1)
+                child_branch = "└── " if is_last_child else "├── "
+                self._generate_ascii_tree_recursive(child, next_prefix, child_branch, lines)
     
     def export_ascii_tree_to_file(self, workable: 'Workable', filepath: str) -> None:
         """
@@ -301,8 +302,6 @@ class WorkableVisualizer:
             Workable信息的扁平列表
         """
         try:
-            from workable.core.workable import ComplexWorkable
-            
             result = []
             self._collect_workables_recursive(workable, result)
             return result
@@ -319,30 +318,32 @@ class WorkableVisualizer:
             workable: Workable对象
             result: 结果列表
         """
-        from workable.core.workable import ComplexWorkable
-        
         # 添加当前Workable
+        workable_type = "SimpleWorkable" if workable.is_atom() else "ComplexWorkable"
+        is_local = hasattr(workable, 'is_local') and workable.is_local
+        
         result.append({
             "name": workable.name,
             "uuid": workable.uuid,
-            "type": workable.__class__.__name__,
-            "logic_description": workable.logic_description
+            "type": workable_type,
+            "logic_description": workable.logic_description,
+            "is_local": is_local
         })
         
-        # 处理复杂Workable
-        if isinstance(workable, ComplexWorkable):
-            # 添加本地Workable
-            for local_uuid, local in workable.content.workables.items():
-                result.append({
-                    "name": local.name,
-                    "uuid": local.uuid,
-                    "type": local.__class__.__name__,
-                    "logic_description": local.logic_description,
-                    "is_local": True,
-                    "parent_uuid": workable.uuid
-                })
-            
-            # 递归处理子Workable
+        # 处理本地Workable
+        for local_uuid, local in workable.local_workables.items():
+            local_info = {
+                "name": local.name,
+                "uuid": local.uuid,
+                "type": "SimpleWorkable" if local.is_atom() else "ComplexWorkable",
+                "logic_description": local.logic_description,
+                "is_local": True,
+                "parent_uuid": workable.uuid
+            }
+            result.append(local_info)
+        
+        # 处理复杂Workable子节点
+        if workable.is_complex():
             for child_uuid, child in workable.child_workables.items():
                 self._collect_workables_recursive(child, result)
     
@@ -425,13 +426,28 @@ class WorkableVisualizer:
         # 处理子节点
         children = []
         
-        # 添加β-workables (外部引用)
-        if hasattr(workable, 'child_workables'):
+        # 添加子Workable (仅复杂工作单元)
+        if workable.is_complex():
             children.extend(list(workable.child_workables.keys()))
         
-        # 添加γ-workables (本地workable)
-        if hasattr(workable, 'content') and hasattr(workable.content, 'workables'):
-            children.extend(list(workable.content.workables.keys()))
+        # 添加本地Workable
+        locals_list = list(workable.local_workables.keys())
+        
+        # 处理本地节点
+        for i, local_uuid in enumerate(locals_list):
+            local = workable.local_workables[local_uuid]
+            local_info = self._format_node_info(local, show_details)
+            
+            is_last = (i == len(locals_list) - 1) and len(children) == 0
+            
+            if compact:
+                new_prefix = prefix + (branch_styles["space"] if is_last else branch_styles["pipe"])
+                new_branch = branch_styles["branch"]
+            else:
+                new_prefix = prefix + (branch_styles["space"] if is_last else branch_styles["pipe"])
+                new_branch = branch_styles["last_branch"] if is_last else branch_styles["branch"]
+                
+            lines.append(f"{new_prefix}{new_branch}[LOCAL] {local_info}")
         
         # 显示子节点
         child_count = len(children)
@@ -474,25 +490,15 @@ class WorkableVisualizer:
         indent_str = "  " * level if indent else ""
         lines.append(f"{indent_str}[{node_info}]")
         
-        # 处理子节点
-        children = []
+        # 处理本地Workable
+        for local_uuid, local in workable.local_workables.items():
+            local_info = self._format_node_info(local, show_details)
+            lines.append(f"{indent_str}  [LOCAL] {local_info}")
         
-        # 添加β-workables (外部引用)
-        if hasattr(workable, 'child_workables'):
-            children.extend(list(workable.child_workables.keys()))
-        
-        # 添加γ-workables (本地workable)
-        if hasattr(workable, 'content') and hasattr(workable.content, 'workables'):
-            local_ids = list(workable.content.workables.keys())
-            for local_id in local_ids:
-                local = workable.content.workables[local_id]
-                # 显示是本地workable
-                local_info = self._format_node_info(local, show_details)
-                lines.append(f"{indent_str}  [LOCAL] {local_info}")
-        
-        # 显示子节点
-        for child_uuid in children:
-            self._list_node(child_uuid, level + 1, lines, show_details, parent_map, indent)
+        # 处理子Workable (仅复杂工作单元)
+        if workable.is_complex():
+            for child_uuid in workable.child_workables.keys():
+                self._list_node(child_uuid, level + 1, lines, show_details, parent_map, indent)
     
     def _format_node_info(self, workable: 'Workable', show_details: bool) -> str:
         """
@@ -505,7 +511,9 @@ class WorkableVisualizer:
         Returns:
             格式化的节点信息字符串
         """
+        workable_type = "SimpleWorkable" if workable.is_atom() else "ComplexWorkable"
+        
         if show_details:
-            return f"{workable.name} ({workable.__class__.__name__}) [{workable.uuid[:6]}]"
+            return f"{workable.name} ({workable_type}) [{workable.uuid[:6]}]"
         else:
             return f"{workable.name} [{workable.uuid[:6]}]" 

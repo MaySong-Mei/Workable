@@ -15,9 +15,10 @@ from datetime import datetime
 
 from workable.core.manager import WorkableManager
 from workable.core.models import Message, Relation
+# 虽然我们现在不需要直接使用转换函数，但为了向后兼容保留导入
 from workable.core.workable import convert_simple_to_complex, convert_complex_to_simple
 from workable.utils.logging import configure_logging
-from workable.utils.visualizer import WorkableVisualizer
+from workable.visualizer import WorkableVisualizer
 
 
 def create_code_snippet(name, description, language="python"):
@@ -144,15 +145,17 @@ END;
 def create_frontend_system(manager):
     """创建前端系统及其组件"""
     # 创建前端系统
-    frontend = manager.create_complex(
+    frontend = manager.create_workable(
         name="前端系统",
-        logic_description="Web应用程序的前端实现"
+        logic_description="Web应用程序的前端实现",
+        is_atom=False  # 创建复杂工作单元
     )
     
     # 创建UI组件模块
-    ui_components = manager.create_complex(
+    ui_components = manager.create_workable(
         name="UI组件",
-        logic_description="可重用的前端UI组件库"
+        logic_description="可重用的前端UI组件库",
+        is_atom=False  # 创建复杂工作单元
     )
     frontend.add_child(ui_components)
     
@@ -166,9 +169,10 @@ def create_frontend_system(manager):
     ]
     
     for name, desc, lang in components:
-        component = manager.create_simple(
+        component = manager.create_workable(
             name=name,
             logic_description=desc,
+            is_atom=True,  # 创建简单工作单元
             content=create_code_snippet(name, desc, lang),
             content_type="code"
         )
@@ -178,9 +182,10 @@ def create_frontend_system(manager):
     print(f"UI组件: {ui_components.child_workables}")
     
     # 创建页面模块
-    pages = manager.create_complex(
+    pages = manager.create_workable(
         name="页面模块",
-        logic_description="应用程序的各个页面实现"
+        logic_description="应用程序的各个页面实现",
+        is_atom=False  # 创建复杂工作单元
     )
     frontend.add_child(pages)
     
@@ -194,18 +199,20 @@ def create_frontend_system(manager):
     ]
     
     for name, desc, lang in page_list:
-        page = manager.create_simple(
+        page = manager.create_workable(
             name=name,
             logic_description=desc,
+            is_atom=True,  # 创建简单工作单元
             content=create_code_snippet(name, desc, lang),
             content_type="code"
         )
         pages.add_child(page)
     
     # 创建服务模块
-    services = manager.create_complex(
+    services = manager.create_workable(
         name="前端服务",
-        logic_description="前端与后端交互的服务层"
+        logic_description="前端与后端交互的服务层",
+        is_atom=False  # 创建复杂工作单元
     )
     frontend.add_child(services)
     
@@ -219,18 +226,20 @@ def create_frontend_system(manager):
     ]
     
     for name, desc, lang in service_list:
-        service = manager.create_simple(
+        service = manager.create_workable(
             name=name,
             logic_description=desc,
+            is_atom=True,  # 创建简单工作单元
             content=create_code_snippet(name, desc, lang),
             content_type="code"
         )
         services.add_child(service)
     
     # 创建本地工作单元
-    styles = manager.create_simple(
+    styles = manager.create_workable(
         name="样式指南",
         logic_description="前端样式规范和主题配置",
+        is_atom=True,  # 创建简单工作单元
         content="""
 # 前端样式指南
 
@@ -253,10 +262,9 @@ def create_frontend_system(manager):
     )
     frontend.add_local(styles)
     
-    # 转换简单组件为复杂组件
+    # 转换简单组件为复杂组件 - 使用新的方法
     buttons_component = next(iter(ui_components.child_workables.values()))  # 获取第一个组件
-    complex_buttons = convert_simple_to_complex(buttons_component)
-    ui_components.child_workables[buttons_component.uuid] = complex_buttons  # 使用原始UUID更新
+    buttons_component.make_complex()  # 直接转换，无需创建新实例
     
     # 为复杂按钮组件添加子组件
     button_types = [
@@ -267,13 +275,14 @@ def create_frontend_system(manager):
     ]
     
     for name, desc, lang in button_types:
-        btn = manager.create_simple(
+        btn = manager.create_workable(
             name=name,
             logic_description=desc,
+            is_atom=True,  # 创建简单工作单元
             content=create_code_snippet(name, desc, lang),
             content_type="code"
         )
-        complex_buttons.add_child(btn)
+        buttons_component.add_child(btn)
     
     return frontend
 
@@ -281,15 +290,17 @@ def create_frontend_system(manager):
 def create_backend_system(manager):
     """创建后端系统及其组件"""
     # 创建后端系统
-    backend = manager.create_complex(
+    backend = manager.create_workable(
         name="后端系统",
-        logic_description="Web应用程序的服务器端和业务逻辑实现"
+        logic_description="Web应用程序的服务器端和业务逻辑实现",
+        is_atom=False  # 创建复杂工作单元
     )
     
     # 创建API模块
-    api = manager.create_complex(
+    api = manager.create_workable(
         name="API层",
-        logic_description="应用程序接口定义和实现"
+        logic_description="应用程序接口定义和实现",
+        is_atom=False  # 创建复杂工作单元
     )
     backend.add_child(api)
     
@@ -303,18 +314,20 @@ def create_backend_system(manager):
     ]
     
     for name, desc, lang in endpoints:
-        endpoint = manager.create_simple(
+        endpoint = manager.create_workable(
             name=name,
             logic_description=desc,
+            is_atom=True,  # 创建简单工作单元
             content=create_code_snippet(name, desc, lang),
             content_type="code"
         )
         api.add_child(endpoint)
     
     # 创建服务层
-    services = manager.create_complex(
+    services = manager.create_workable(
         name="服务层",
-        logic_description="业务逻辑和领域服务实现"
+        logic_description="业务逻辑和领域服务实现",
+        is_atom=False  # 创建复杂工作单元
     )
     backend.add_child(services)
     
@@ -328,18 +341,20 @@ def create_backend_system(manager):
     ]
     
     for name, desc, lang in service_list:
-        service = manager.create_simple(
+        service = manager.create_workable(
             name=name,
             logic_description=desc,
+            is_atom=True,  # 创建简单工作单元
             content=create_code_snippet(name, desc, lang),
             content_type="code"
         )
         services.add_child(service)
     
     # 创建数据访问层
-    data_access = manager.create_complex(
+    data_access = manager.create_workable(
         name="数据访问层",
-        logic_description="数据库交互和ORM实现"
+        logic_description="数据库交互和ORM实现",
+        is_atom=False  # 创建复杂工作单元
     )
     backend.add_child(data_access)
     
@@ -353,18 +368,20 @@ def create_backend_system(manager):
     ]
     
     for name, desc, lang in dao_list:
-        dao = manager.create_simple(
+        dao = manager.create_workable(
             name=name,
             logic_description=desc,
+            is_atom=True,  # 创建简单工作单元
             content=create_code_snippet(name, desc, lang),
             content_type="code"
         )
         data_access.add_child(dao)
     
     # 创建本地工作单元
-    config = manager.create_simple(
+    config = manager.create_workable(
         name="后端配置",
         logic_description="后端系统配置和环境设置",
+        is_atom=True,  # 创建简单工作单元
         content="""
 # 后端系统配置
 
@@ -390,10 +407,9 @@ ENCRYPTION_KEY=your-encryption-key
     )
     backend.add_local(config)
     
-    # 转换用户服务为复杂组件
+    # 转换用户服务为复杂组件 - 使用新的方法
     user_service = next(iter(services.child_workables.values()))  # 获取第一个组件
-    complex_user_service = convert_simple_to_complex(user_service)
-    services.child_workables[user_service.uuid] = complex_user_service  # 使用原始UUID更新
+    user_service.make_complex()  # 直接转换，无需创建新实例
     
     # 为用户服务添加子组件
     user_service_components = [
@@ -404,13 +420,14 @@ ENCRYPTION_KEY=your-encryption-key
     ]
     
     for name, desc, lang in user_service_components:
-        component = manager.create_simple(
+        component = manager.create_workable(
             name=name,
             logic_description=desc,
+            is_atom=True,  # 创建简单工作单元
             content=create_code_snippet(name, desc, lang),
             content_type="code"
         )
-        complex_user_service.add_child(component)
+        user_service.add_child(component)
     
     return backend
 
@@ -418,15 +435,17 @@ ENCRYPTION_KEY=your-encryption-key
 def create_database_system(manager):
     """创建数据库系统及其组件"""
     # 创建数据库系统
-    database = manager.create_complex(
+    database = manager.create_workable(
         name="数据库系统",
-        logic_description="应用程序的数据存储和管理系统"
+        logic_description="应用程序的数据存储和管理系统",
+        is_atom=False  # 创建复杂工作单元
     )
     
     # 创建表结构模块
-    schema = manager.create_complex(
+    schema = manager.create_workable(
         name="数据库结构",
-        logic_description="数据库表结构和关系定义"
+        logic_description="数据库表结构和关系定义",
+        is_atom=False  # 创建复杂工作单元
     )
     database.add_child(schema)
     
@@ -440,18 +459,20 @@ def create_database_system(manager):
     ]
     
     for name, desc, lang in tables:
-        table = manager.create_simple(
+        table = manager.create_workable(
             name=name,
             logic_description=desc,
+            is_atom=True,  # 创建简单工作单元
             content=create_code_snippet(name, desc, lang),
             content_type="code"
         )
         schema.add_child(table)
     
     # 创建存储过程模块
-    procedures = manager.create_complex(
+    procedures = manager.create_workable(
         name="存储过程",
-        logic_description="数据库存储过程和函数"
+        logic_description="数据库存储过程和函数",
+        is_atom=False  # 创建复杂工作单元
     )
     database.add_child(procedures)
     
@@ -465,18 +486,20 @@ def create_database_system(manager):
     ]
     
     for name, desc, lang in proc_list:
-        proc = manager.create_simple(
+        proc = manager.create_workable(
             name=name,
             logic_description=desc,
+            is_atom=True,  # 创建简单工作单元
             content=create_code_snippet(name, desc, lang),
             content_type="code"
         )
         procedures.add_child(proc)
     
     # 创建索引和优化模块
-    optimization = manager.create_complex(
+    optimization = manager.create_workable(
         name="索引和优化",
-        logic_description="数据库索引和性能优化配置"
+        logic_description="数据库索引和性能优化配置",
+        is_atom=False  # 创建复杂工作单元
     )
     database.add_child(optimization)
     
@@ -490,18 +513,20 @@ def create_database_system(manager):
     ]
     
     for name, desc, lang in optimization_list:
-        opt = manager.create_simple(
+        opt = manager.create_workable(
             name=name,
             logic_description=desc,
+            is_atom=True,  # 创建简单工作单元
             content=create_code_snippet(name, desc, lang),
             content_type="code"
         )
         optimization.add_child(opt)
     
     # 创建本地工作单元
-    db_config = manager.create_simple(
+    db_config = manager.create_workable(
         name="数据库配置",
         logic_description="数据库连接和配置信息",
+        is_atom=True,  # 创建简单工作单元
         content="""
 # 数据库配置
 
@@ -534,15 +559,17 @@ CONNECTION_TIMEOUT=5
 def create_devops_system(manager):
     """创建DevOps系统及其组件"""
     # 创建DevOps系统
-    devops = manager.create_complex(
+    devops = manager.create_workable(
         name="DevOps系统",
-        logic_description="应用程序的开发、测试、部署和运维流程"
+        logic_description="应用程序的开发、测试、部署和运维流程",
+        is_atom=False  # 创建复杂工作单元
     )
     
     # 创建CI/CD模块
-    cicd = manager.create_complex(
+    cicd = manager.create_workable(
         name="CI/CD管道",
-        logic_description="持续集成和持续部署流程"
+        logic_description="持续集成和持续部署流程",
+        is_atom=False  # 创建复杂工作单元
     )
     devops.add_child(cicd)
     
@@ -556,18 +583,20 @@ def create_devops_system(manager):
     ]
     
     for name, desc, lang in cicd_components:
-        component = manager.create_simple(
+        component = manager.create_workable(
             name=name,
             logic_description=desc,
+            is_atom=True,  # 创建简单工作单元
             content=create_code_snippet(name, desc, lang),
             content_type="code"
         )
         cicd.add_child(component)
     
     # 创建基础设施模块
-    infrastructure = manager.create_complex(
+    infrastructure = manager.create_workable(
         name="基础设施",
-        logic_description="应用程序运行环境和基础设施配置"
+        logic_description="应用程序运行环境和基础设施配置",
+        is_atom=False  # 创建复杂工作单元
     )
     devops.add_child(infrastructure)
     
@@ -581,18 +610,20 @@ def create_devops_system(manager):
     ]
     
     for name, desc, lang in infra_components:
-        component = manager.create_simple(
+        component = manager.create_workable(
             name=name,
             logic_description=desc,
+            is_atom=True,  # 创建简单工作单元
             content=create_code_snippet(name, desc, lang),
             content_type="code"
         )
         infrastructure.add_child(component)
     
     # 创建监控模块
-    monitoring = manager.create_complex(
+    monitoring = manager.create_workable(
         name="监控和告警",
-        logic_description="系统监控、日志收集和告警配置"
+        logic_description="系统监控、日志收集和告警配置",
+        is_atom=False  # 创建复杂工作单元
     )
     devops.add_child(monitoring)
     
@@ -606,18 +637,20 @@ def create_devops_system(manager):
     ]
     
     for name, desc, lang in monitor_components:
-        component = manager.create_simple(
+        component = manager.create_workable(
             name=name,
             logic_description=desc,
+            is_atom=True,  # 创建简单工作单元
             content=create_code_snippet(name, desc, lang),
             content_type="code"
         )
         monitoring.add_child(component)
     
     # 创建本地工作单元
-    deployment_guide = manager.create_simple(
+    deployment_guide = manager.create_workable(
         name="部署指南",
         logic_description="系统部署和运维操作指南",
+        is_atom=True,  # 创建简单工作单元
         content="""
 # 系统部署指南
 
@@ -649,15 +682,17 @@ def create_devops_system(manager):
 def create_documentation_system(manager):
     """创建文档系统及其组件"""
     # 创建文档系统
-    documentation = manager.create_complex(
+    documentation = manager.create_workable(
         name="文档系统",
-        logic_description="项目文档和知识库"
+        logic_description="项目文档和知识库",
+        is_atom=False  # 创建复杂工作单元
     )
     
     # 创建用户文档模块
-    user_docs = manager.create_complex(
+    user_docs = manager.create_workable(
         name="用户文档",
-        logic_description="面向终端用户的使用指南"
+        logic_description="面向终端用户的使用指南",
+        is_atom=False  # 创建复杂工作单元
     )
     documentation.add_child(user_docs)
     
@@ -671,18 +706,20 @@ def create_documentation_system(manager):
     ]
     
     for name, desc, lang in user_doc_components:
-        component = manager.create_simple(
+        component = manager.create_workable(
             name=name,
             logic_description=desc,
+            is_atom=True,  # 创建简单工作单元
             content=f"# {name}\n\n{desc}\n\n## 内容概述\n\n这里是{name}的详细内容...",
             content_type="text"
         )
         user_docs.add_child(component)
     
     # 创建开发文档模块
-    dev_docs = manager.create_complex(
+    dev_docs = manager.create_workable(
         name="开发文档",
-        logic_description="面向开发人员的技术文档"
+        logic_description="面向开发人员的技术文档",
+        is_atom=False  # 创建复杂工作单元
     )
     documentation.add_child(dev_docs)
     
@@ -696,18 +733,20 @@ def create_documentation_system(manager):
     ]
     
     for name, desc, lang in dev_doc_components:
-        component = manager.create_simple(
+        component = manager.create_workable(
             name=name,
             logic_description=desc,
+            is_atom=True,  # 创建简单工作单元
             content=f"# {name}\n\n{desc}\n\n## 内容概述\n\n这里是{name}的详细内容...",
             content_type="text"
         )
         dev_docs.add_child(component)
     
     # 创建运维文档模块
-    ops_docs = manager.create_complex(
+    ops_docs = manager.create_workable(
         name="运维文档",
-        logic_description="系统运维和管理文档"
+        logic_description="系统运维和管理文档",
+        is_atom=False  # 创建复杂工作单元
     )
     documentation.add_child(ops_docs)
     
@@ -721,18 +760,20 @@ def create_documentation_system(manager):
     ]
     
     for name, desc, lang in ops_doc_components:
-        component = manager.create_simple(
+        component = manager.create_workable(
             name=name,
             logic_description=desc,
+            is_atom=True,  # 创建简单工作单元
             content=f"# {name}\n\n{desc}\n\n## 内容概述\n\n这里是{name}的详细内容...",
             content_type="text"
         )
         ops_docs.add_child(component)
     
     # 创建本地工作单元
-    doc_standards = manager.create_simple(
+    doc_standards = manager.create_workable(
         name="文档标准",
         logic_description="项目文档编写规范和标准",
+        is_atom=True,  # 创建简单工作单元
         content="""
 # 文档编写标准
 
@@ -773,9 +814,10 @@ def main():
         
         # 2. 创建主项目
         print("\n2. 创建企业级Web应用程序项目")
-        web_app = manager.create_complex(
+        web_app = manager.create_workable(
             name="企业级Web应用程序",
-            logic_description="多层次企业应用平台，包含前后端、数据库、DevOps和文档系统"
+            logic_description="多层次企业应用平台，包含前后端、数据库、DevOps和文档系统",
+            is_atom=False  # 创建复杂工作单元
         )
         print(f"创建了项目: {web_app.name} (UUID: {web_app.uuid})")
         

@@ -6,8 +6,7 @@ import logging
 from typing import Dict, List, Optional, Tuple, Type
 
 from workable.core.workable import (
-    Workable, SimpleWorkable, ComplexWorkable,
-    convert_simple_to_complex, convert_complex_to_simple
+    Workable, convert_simple_to_complex, convert_complex_to_simple
 )
 from workable.core.exceptions import WorkableError, ConversionError, ManagerError
 
@@ -20,6 +19,102 @@ class WorkableManager:
         """初始化Workable管理器"""
         self.workables: Dict[str, Workable] = {}
         self.logger = logging.getLogger('workable_manager')
+    
+    # 主要API方法
+    
+    def create_workable(self, name: str, logic_description: str, is_atom: bool = True,
+                       content: str = None, content_type: str = "code") -> Workable:
+        """
+        创建Workable（统一接口）
+        
+        Args:
+            name: Workable名称
+            logic_description: 逻辑描述
+            is_atom: 是否为原子Workable (简单模式)
+            content: 内容字符串 (仅在简单模式下使用)
+            content_type: 内容类型 (仅在简单模式下使用)
+            
+        Returns:
+            创建的Workable
+            
+        Raises:
+            WorkableError: 如果创建失败
+        """
+        try:
+            if not name or not isinstance(name, str):
+                raise WorkableError("无效的name参数")
+            
+            # 创建Workable
+            workable = Workable(
+                name=name,
+                logic_description=logic_description,
+                is_atom=is_atom,
+                content_str=content,
+                content_type=content_type
+            )
+            
+            if workable.uuid in self.workables:
+                raise WorkableError(f"UUID冲突: {workable.uuid}")
+                
+            self.workables[workable.uuid] = workable
+            
+            # 根据类型记录日志
+            type_str = "SimpleWorkable" if is_atom else "ComplexWorkable"
+            self.logger.info(f"创建{type_str}: {workable.uuid}")
+            
+            return workable
+        except Exception as e:
+            if not isinstance(e, WorkableError):
+                e = WorkableError(f"创建Workable失败: {str(e)}")
+            self.logger.error(str(e))
+            raise e
+    
+    # 兼容性方法
+    
+    def create_simple(self, name: str, logic_description: str, content: str,
+                      content_type: str = "code") -> Workable:
+        """
+        创建简单Workable (兼容性方法)
+        
+        Args:
+            name: Workable名称
+            logic_description: 逻辑描述
+            content: 内容字符串
+            content_type: 内容类型，默认为"code"
+            
+        Returns:
+            创建的简单Workable
+            
+        Raises:
+            WorkableError: 如果创建失败
+        """
+        return self.create_workable(
+            name=name, 
+            logic_description=logic_description, 
+            is_atom=True, 
+            content=content, 
+            content_type=content_type
+        )
+    
+    def create_complex(self, name: str, logic_description: str) -> Workable:
+        """
+        创建复杂Workable (兼容性方法)
+        
+        Args:
+            name: Workable名称
+            logic_description: 逻辑描述
+            
+        Returns:
+            创建的复杂Workable
+            
+        Raises:
+            WorkableError: 如果创建失败
+        """
+        return self.create_workable(
+            name=name, 
+            logic_description=logic_description, 
+            is_atom=False
+        )
     
     # 兼容测试API的方法
     
@@ -81,12 +176,12 @@ class WorkableManager:
         """
         return self.workables.copy()
     
-    def get_workables_by_type(self, workable_type: Type[Workable]) -> Dict[str, Workable]:
+    def get_workables_by_type(self, is_atom: bool) -> Dict[str, Workable]:
         """
         获取指定类型的Workable
         
         Args:
-            workable_type: Workable类型
+            is_atom: 是否为原子Workable (简单模式)
         
         Returns:
             指定类型的Workable字典
@@ -94,7 +189,7 @@ class WorkableManager:
         return {
             uuid: workable 
             for uuid, workable in self.workables.items() 
-            if isinstance(workable, workable_type)
+            if workable.is_atom() == is_atom
         }
     
     def create_simple_workable(self, name: str, logic_description: str, 
@@ -159,7 +254,7 @@ class WorkableManager:
             是否成功更新
         """
         workable = self.read(uuid)
-        if workable and isinstance(workable, SimpleWorkable):
+        if workable and workable.is_atom():
             workable.update_content(content_str)
             self.logger.info(f"更新SimpleWorkable内容: {uuid}")
             return True
@@ -181,73 +276,6 @@ class WorkableManager:
             return False
     
     # 实际实现的方法
-    
-    def create_simple(self, name: str, logic_description: str, content: str,
-                      content_type: str = "code") -> SimpleWorkable:
-        """
-        创建SimpleWorkable
-        
-        Args:
-            name: Workable名称
-            logic_description: 逻辑描述
-            content: 内容字符串
-            content_type: 内容类型，默认为"code"
-            
-        Returns:
-            创建的SimpleWorkable
-            
-        Raises:
-            WorkableError: 如果创建失败
-        """
-        try:
-            if not name or not isinstance(name, str):
-                raise WorkableError("无效的name参数")
-            
-            workable = SimpleWorkable(name, logic_description, content, content_type)
-            
-            if workable.uuid in self.workables:
-                raise WorkableError(f"UUID冲突: {workable.uuid}")
-                
-            self.workables[workable.uuid] = workable
-            self.logger.info(f"创建SimpleWorkable: {workable.uuid}")
-            return workable
-        except Exception as e:
-            if not isinstance(e, WorkableError):
-                e = WorkableError(f"创建SimpleWorkable失败: {str(e)}")
-            self.logger.error(str(e))
-            raise e
-    
-    def create_complex(self, name: str, logic_description: str) -> ComplexWorkable:
-        """
-        创建ComplexWorkable
-        
-        Args:
-            name: Workable名称
-            logic_description: 逻辑描述
-            
-        Returns:
-            创建的ComplexWorkable
-            
-        Raises:
-            WorkableError: 如果创建失败
-        """
-        try:
-            if not name or not isinstance(name, str):
-                raise WorkableError("无效的name参数")
-            
-            workable = ComplexWorkable(name, logic_description)
-            
-            if workable.uuid in self.workables:
-                raise WorkableError(f"UUID冲突: {workable.uuid}")
-                
-            self.workables[workable.uuid] = workable
-            self.logger.info(f"创建ComplexWorkable: {workable.uuid}")
-            return workable
-        except Exception as e:
-            if not isinstance(e, WorkableError):
-                e = WorkableError(f"创建ComplexWorkable失败: {str(e)}")
-            self.logger.error(str(e))
-            raise e
     
     def read(self, uuid: str) -> Optional[Workable]:
         """
@@ -271,7 +299,7 @@ class WorkableManager:
     def update_simple(self, uuid: str, content: str = None, 
                      name: str = None, logic_description: str = None) -> bool:
         """
-        更新SimpleWorkable
+        更新简单Workable
         
         Args:
             uuid: Workable的UUID
@@ -290,8 +318,8 @@ class WorkableManager:
             if not workable:
                 raise WorkableError(f"未找到Workable: {uuid}")
             
-            if not isinstance(workable, SimpleWorkable):
-                raise WorkableError(f"Workable {uuid} 不是SimpleWorkable")
+            if not workable.is_atom():
+                raise WorkableError(f"Workable {uuid} 不是简单类型")
             
             if content:
                 workable.update_content(content)
@@ -299,18 +327,18 @@ class WorkableManager:
             if name or logic_description:
                 workable.update(name, logic_description)
             
-            self.logger.info(f"更新SimpleWorkable: {uuid}")
+            self.logger.info(f"更新简单Workable: {uuid}")
             return True
         except Exception as e:
             if not isinstance(e, WorkableError):
-                e = WorkableError(f"更新SimpleWorkable失败: {str(e)}")
+                e = WorkableError(f"更新简单Workable失败: {str(e)}")
             self.logger.error(str(e))
             raise e
     
     def update_complex_structure(self, uuid: str, add_child: str = None, 
                                remove_child: str = None) -> bool:
         """
-        更新ComplexWorkable结构
+        更新复杂Workable结构
         
         Args:
             uuid: Workable的UUID
@@ -328,8 +356,8 @@ class WorkableManager:
             if not workable:
                 raise WorkableError(f"未找到Workable: {uuid}")
             
-            if not isinstance(workable, ComplexWorkable):
-                raise WorkableError(f"Workable {uuid} 不是ComplexWorkable")
+            if not workable.is_complex():
+                raise WorkableError(f"Workable {uuid} 不是复杂类型")
             
             if add_child:
                 child = self.read(add_child)
@@ -345,7 +373,7 @@ class WorkableManager:
             return True
         except Exception as e:
             if not isinstance(e, WorkableError):
-                e = WorkableError(f"更新ComplexWorkable结构失败: {str(e)}")
+                e = WorkableError(f"更新复杂Workable结构失败: {str(e)}")
             self.logger.error(str(e))
             raise e
     
@@ -353,10 +381,10 @@ class WorkableManager:
                             logic_description: str, content: str, 
                             content_type: str = "code") -> Optional[str]:
         """
-        向ComplexWorkable添加本地Workable
+        向复杂Workable添加本地Workable
         
         Args:
-            complex_uuid: ComplexWorkable的UUID
+            complex_uuid: 复杂Workable的UUID
             name: 本地Workable的名称
             logic_description: 本地Workable的逻辑描述
             content: 本地Workable的内容
@@ -371,19 +399,25 @@ class WorkableManager:
         try:
             complex_work = self.read(complex_uuid)
             if not complex_work:
-                raise WorkableError(f"未找到ComplexWorkable: {complex_uuid}")
+                raise WorkableError(f"未找到复杂Workable: {complex_uuid}")
             
-            if not isinstance(complex_work, ComplexWorkable):
-                raise WorkableError(f"Workable {complex_uuid} 不是ComplexWorkable")
+            if not complex_work.is_complex():
+                raise WorkableError(f"Workable {complex_uuid} 不是复杂类型")
             
             # 创建本地Workable
-            local_work = SimpleWorkable(name, logic_description, content, content_type)
+            local_work = Workable(
+                name=name, 
+                logic_description=logic_description,
+                is_atom=True,
+                content_str=content,
+                content_type=content_type
+            )
             
-            # 添加到ComplexWorkable
+            # 添加到复杂Workable
             complex_work.add_local(local_work)
             
             # 不需要添加到管理器，因为它是本地的
-            self.logger.info(f"向ComplexWorkable添加本地Workable: {complex_uuid} -> {local_work.uuid}")
+            self.logger.info(f"向复杂Workable添加本地Workable: {complex_uuid} -> {local_work.uuid}")
             return local_work.uuid
         except Exception as e:
             if not isinstance(e, WorkableError):
@@ -408,9 +442,9 @@ class WorkableManager:
             if not uuid or uuid not in self.workables:
                 raise WorkableError(f"Workable不存在: {uuid}")
             
-            # 从所有ComplexWorkable中删除对该Workable的引用
+            # 从所有复杂Workable中删除对该Workable的引用
             for w_uuid, workable in self.workables.items():
-                if isinstance(workable, ComplexWorkable) and uuid in workable.child_workables:
+                if workable.is_complex() and uuid in workable.child_workables:
                     workable.remove_child(uuid)
             
             # 删除Workable
@@ -425,13 +459,13 @@ class WorkableManager:
     
     def convert_to_complex(self, uuid: str) -> Optional[str]:
         """
-        将SimpleWorkable转换为ComplexWorkable
+        将简单Workable转换为复杂Workable
         
         Args:
-            uuid: SimpleWorkable的UUID
+            uuid: 简单Workable的UUID
             
         Returns:
-            转换后的ComplexWorkable的UUID，如果转换失败则返回None
+            转换后的Workable的UUID
             
         Raises:
             ConversionError: 如果转换失败
@@ -441,39 +475,29 @@ class WorkableManager:
             if not workable:
                 raise ConversionError(f"未找到Workable: {uuid}")
             
-            if not isinstance(workable, SimpleWorkable):
-                raise ConversionError(f"Workable {uuid} 不是SimpleWorkable")
+            if not workable.is_atom():
+                raise ConversionError(f"Workable {uuid} 不是简单类型")
             
             # 执行转换
-            complex_work = convert_simple_to_complex(workable)
+            workable.make_complex()
             
-            # 更新管理器
-            del self.workables[uuid]
-            self.workables[complex_work.uuid] = complex_work
-            
-            # 更新引用该Workable的ComplexWorkable
-            for w_uuid, w in self.workables.items():
-                if isinstance(w, ComplexWorkable) and uuid in w.child_workables:
-                    w.remove_child(uuid)
-                    w.add_child(complex_work)
-            
-            self.logger.info(f"转换SimpleWorkable为ComplexWorkable: {uuid} -> {complex_work.uuid}")
-            return complex_work.uuid
+            self.logger.info(f"转换简单Workable为复杂Workable: {uuid}")
+            return uuid  # 返回同一个UUID，因为是原地转换
         except Exception as e:
             if not isinstance(e, ConversionError):
-                e = ConversionError(f"转换为ComplexWorkable失败: {str(e)}")
+                e = ConversionError(f"转换为复杂Workable失败: {str(e)}")
             self.logger.error(str(e))
             raise e
     
     def convert_to_simple(self, uuid: str) -> Optional[str]:
         """
-        将ComplexWorkable转换为SimpleWorkable
+        将复杂Workable转换为简单Workable
         
         Args:
-            uuid: ComplexWorkable的UUID
+            uuid: 复杂Workable的UUID
             
         Returns:
-            转换后的SimpleWorkable的UUID，如果转换失败则返回None
+            转换后的Workable的UUID
             
         Raises:
             ConversionError: 如果转换失败
@@ -483,35 +507,17 @@ class WorkableManager:
             if not workable:
                 raise ConversionError(f"未找到Workable: {uuid}")
             
-            if not isinstance(workable, ComplexWorkable):
-                raise ConversionError(f"Workable {uuid} 不是ComplexWorkable")
-            
-            # 检查是否有子Workable
-            if workable.child_workables:
-                raise ConversionError(f"无法转换含有子Workable的ComplexWorkable: {uuid}")
-            
-            # 检查是否有本地Workable
-            if workable.content.workables:
-                raise ConversionError(f"无法转换含有本地Workable的ComplexWorkable: {uuid}")
+            if workable.is_atom():
+                raise ConversionError(f"Workable {uuid} 不是复杂类型")
             
             # 执行转换
-            simple_work = convert_complex_to_simple(workable)
+            workable.make_simple()
             
-            # 更新管理器
-            del self.workables[uuid]
-            self.workables[simple_work.uuid] = simple_work
-            
-            # 更新引用该Workable的ComplexWorkable
-            for w_uuid, w in self.workables.items():
-                if isinstance(w, ComplexWorkable) and uuid in w.child_workables:
-                    w.remove_child(uuid)
-                    w.add_child(simple_work)
-            
-            self.logger.info(f"转换ComplexWorkable为SimpleWorkable: {uuid} -> {simple_work.uuid}")
-            return simple_work.uuid
+            self.logger.info(f"转换复杂Workable为简单Workable: {uuid}")
+            return uuid  # 返回同一个UUID，因为是原地转换
         except Exception as e:
             if not isinstance(e, ConversionError):
-                e = ConversionError(f"转换为SimpleWorkable失败: {str(e)}")
+                e = ConversionError(f"转换为简单Workable失败: {str(e)}")
             self.logger.error(str(e))
             raise e
     
@@ -537,13 +543,13 @@ class WorkableManager:
         parent_map = {}
         
         for parent_uuid, workable in self.workables.items():
-            if isinstance(workable, ComplexWorkable):
-                # 添加β-workables的父引用
+            if workable.is_complex():
+                # 添加子Workable的父引用
                 for child_uuid in workable.child_workables.keys():
                     parent_map[child_uuid] = parent_uuid
                 
-                # 添加γ-workables的父引用
-                for local_uuid in workable.content.workables.keys():
+                # 添加本地Workable的父引用
+                for local_uuid in workable.local_workables.keys():
                     parent_map[local_uuid] = parent_uuid
         
         return parent_map
@@ -569,14 +575,13 @@ class WorkableManager:
             包含统计信息的字典
         """
         total = len(self.workables)
-        simple_count = sum(1 for w in self.workables.values() if isinstance(w, SimpleWorkable))
-        complex_count = sum(1 for w in self.workables.values() if isinstance(w, ComplexWorkable))
+        simple_count = sum(1 for w in self.workables.values() if w.is_atom())
+        complex_count = sum(1 for w in self.workables.values() if w.is_complex())
         
         # 获取总共的本地Workable数量
         local_count = 0
         for w in self.workables.values():
-            if isinstance(w, ComplexWorkable):
-                local_count += len(w.content.workables)
+            local_count += len(w.local_workables)
         
         # 获取根节点数量
         roots = self.get_all_roots()

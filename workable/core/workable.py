@@ -1,5 +1,5 @@
 """
-Workable核心模块 - 定义Workable基类和SimpleWorkable、ComplexWorkable子类
+Workable核心模块 - 定义统一的Workable类，通过内部状态区分简单和复杂工作单元
 """
 
 import uuid
@@ -14,25 +14,40 @@ from workable.core.exceptions import WorkableError, ConversionError
 
 class Workable:
     """
-    Workable基类，包含基本的元数据和内容管理
+    统一的Workable类，通过内部状态区分简单(原子/γ-workable)和复杂(复合/α-workable)模式
     """
     
-    def __init__(self, name: str, logic_description: str):
+    def __init__(self, name: str, logic_description: str, is_atom: bool = True,
+                 content_str: str = None, content_type: str = "code"):
         """
         初始化Workable
         
         Args:
             name: Workable名称
             logic_description: 逻辑描述
+            is_atom: 是否为原子Workable (简单模式)
+            content_str: 内容字符串 (仅在简单模式下使用)
+            content_type: 内容类型 (仅在简单模式下使用)
         """
         self.uuid = str(uuid.uuid4())
         self.name = name
         self.logic_description = logic_description
+        self.is_atom_flag = is_atom  # 内部状态标识
         self.content = Content()
         self.message_manager = MessageManager()
         self.relation_manager = RelationManager()
         self.logger = logging.getLogger('workable')
-    
+        
+        # 简单模式特有属性
+        self._content_str = content_str if is_atom else None
+        self._content_type = content_type if is_atom else None
+        
+        # 复杂模式特有属性
+        self.child_workables = {} if not is_atom else None
+        
+        # 所有Workable都可以包含本地Workable
+        self.local_workables = {}
+        
     def to_frame(self) -> WorkableFrame:
         """
         将当前Workable转换为Frame
@@ -61,6 +76,8 @@ class Workable:
         
         self.logger.debug(f"更新Workable基本信息: {self.uuid}")
     
+    # 状态相关方法
+    
     def is_atom(self) -> bool:
         """
         检查是否为原子Workable
@@ -68,76 +85,202 @@ class Workable:
         Returns:
             是否为原子Workable
         """
-        raise NotImplementedError("子类必须实现is_atom方法")
+        return self.is_atom_flag
     
-    def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} uuid={self.uuid[:6]} name={self.name}>"
-
-
-class SimpleWorkable(Workable):
-    """
-    简单Workable (γ-workable)，存储原子内容
-    """
-    
-    def __init__(self, name: str, logic_description: str, content_str: str, content_type: str = "code"):
+    def is_simple(self) -> bool:
         """
-        初始化SimpleWorkable
+        检查是否为简单Workable (别名方法)
+        
+        Returns:
+            是否为简单Workable
+        """
+        return self.is_atom()
+    
+    def is_complex(self) -> bool:
+        """
+        检查是否为复杂Workable
+        
+        Returns:
+            是否为复杂Workable
+        """
+        return not self.is_atom()
+    
+    # 状态转换方法
+    
+    def make_complex(self) -> 'Workable':
+        """
+        将简单Workable转换为复杂Workable
+        
+        Returns:
+            转换后的Workable (self)
+            
+        Raises:
+            ConversionError: 如果转换失败
+        """
+        if not self.is_atom():
+            self.logger.warning(f"Workable {self.uuid} 已经是复杂类型")
+            return self
+        
+        self.logger.info(f"开始将Workable {self.uuid} 从简单类型转换为复杂类型")
+        
+        # 如果有内容，创建本地Workable来保存它
+        if self._content_str is not None:
+            local_workable = Workable(
+                name=f"{self.name}_content",
+                logic_description=self.logic_description,
+                is_atom=True,
+                content_str=self._content_str,
+                content_type=self._content_type
+            )
+            local_workable.is_local = True  # 标记为本地
+            self.add_local(local_workable)
+        
+        # 状态转换
+        self.is_atom_flag = False
+        self._content_str = None
+        self._content_type = None
+        self.child_workables = {}
+        
+        self.logger.info(f"Workable {self.uuid} 已成功转换为复杂类型")
+        
+        return self
+    
+    def make_simple(self) -> 'Workable':
+        """
+        将复杂Workable转换为简单Workable
+        
+        Returns:
+            转换后的Workable (self)
+            
+        Raises:
+            ConversionError: 如果转换失败
+        """
+        if self.is_atom():
+            self.logger.warning(f"Workable {self.uuid} 已经是简单类型")
+            return self
+        
+        # 检查是否可以转换
+        if self.child_workables and len(self.child_workables) > 0:
+            raise ConversionError(f"无法转换含有子Workable的复杂Workable: {self.uuid}")
+        
+        # 需要有且仅有一个本地Workable
+        if len(self.local_workables) != 1:
+            raise ConversionError(
+                f"复杂Workable {self.uuid} 包含 {len(self.local_workables)} 个本地Workable，"
+                f"无法转换为简单Workable（需要恰好1个）"
+            )
+        
+        self.logger.info(f"开始将Workable {self.uuid} 从复杂类型转换为简单类型")
+        
+        # 获取唯一的本地Workable
+        local_uuid = next(iter(self.local_workables.keys()))
+        local_workable = self.local_workables[local_uuid]
+        
+        # 提取内容
+        self._content_str = local_workable._content_str
+        self._content_type = local_workable._content_type
+        
+        # 状态转换
+        self.is_atom_flag = True
+        self.local_workables = {}  # 清空本地Workable
+        self.child_workables = None
+        
+        self.logger.info(f"Workable {self.uuid} 已成功转换为简单类型")
+        
+        return self
+    
+    # 简单模式方法
+    
+    @property
+    def content_str(self) -> str:
+        """
+        获取内容字符串 (仅简单模式)
+        
+        Returns:
+            内容字符串
+            
+        Raises:
+            AttributeError: 如果在复杂模式下调用
+        """
+        if not self.is_atom():
+            raise AttributeError("复杂Workable没有直接内容，请使用frames或本地Workable")
+        return self._content_str
+    
+    @content_str.setter
+    def content_str(self, value: str) -> None:
+        """
+        设置内容字符串 (仅简单模式)
         
         Args:
-            name: Workable名称
-            logic_description: 逻辑描述
-            content_str: 内容字符串
-            content_type: 内容类型，默认为"code"
+            value: 新的内容字符串
+            
+        Raises:
+            AttributeError: 如果在复杂模式下调用
         """
-        super().__init__(name, logic_description)
-        self.content_str = content_str
-        self.content_type = content_type
-        self.logger.debug(f"创建SimpleWorkable: {self.uuid}, type={content_type}")
+        if not self.is_atom():
+            raise AttributeError("复杂Workable没有直接内容，请使用frames或本地Workable")
+        self._content_str = value
+    
+    @property
+    def content_type(self) -> str:
+        """
+        获取内容类型 (仅简单模式)
+        
+        Returns:
+            内容类型
+            
+        Raises:
+            AttributeError: 如果在复杂模式下调用
+        """
+        if not self.is_atom():
+            raise AttributeError("复杂Workable没有直接内容类型，请使用frames或本地Workable")
+        return self._content_type
+    
+    @content_type.setter
+    def content_type(self, value: str) -> None:
+        """
+        设置内容类型 (仅简单模式)
+        
+        Args:
+            value: 新的内容类型
+            
+        Raises:
+            AttributeError: 如果在复杂模式下调用
+        """
+        if not self.is_atom():
+            raise AttributeError("复杂Workable没有直接内容类型，请使用frames或本地Workable")
+        self._content_type = value
     
     def update_content(self, content_str: str) -> None:
         """
-        更新内容
+        更新内容 (仅简单模式)
         
         Args:
             content_str: 新的内容字符串
+            
+        Raises:
+            AttributeError: 如果在复杂模式下调用
         """
-        self.content_str = content_str
-        self.logger.debug(f"更新SimpleWorkable内容: {self.uuid}")
+        if not self.is_atom():
+            raise AttributeError("复杂Workable没有直接内容，请使用frames或本地Workable")
+        self._content_str = content_str
+        self.logger.debug(f"更新Workable内容: {self.uuid}")
     
-    def is_atom(self) -> bool:
-        """
-        SimpleWorkable始终是原子的
-        
-        Returns:
-            True
-        """
-        return True
-
-
-class ComplexWorkable(Workable):
-    """
-    复杂Workable (α-workable)，可以包含β-workable和γ-workable
-    """
+    # 复杂模式方法
     
-    def __init__(self, name: str, logic_description: str):
+    def add_child(self, child: 'Workable') -> None:
         """
-        初始化ComplexWorkable
-        
-        Args:
-            name: Workable名称
-            logic_description: 逻辑描述
-        """
-        super().__init__(name, logic_description)
-        self.child_workables: Dict[str, Workable] = {}  # β-workables
-        self.logger.debug(f"创建ComplexWorkable: {self.uuid}")
-    
-    def add_child(self, child: Workable) -> None:
-        """
-        添加子Workable (β-workable)
+        添加子Workable (仅复杂模式)
         
         Args:
             child: 要添加的子Workable
+            
+        Raises:
+            AttributeError: 如果在简单模式下调用
         """
+        if self.is_atom():
+            raise AttributeError("简单Workable不能添加子Workable，请先调用make_complex()")
+        
         if not isinstance(child, Workable):
             raise WorkableError(f"无效的Workable对象: {child}")
         
@@ -156,29 +299,22 @@ class ComplexWorkable(Workable):
         
         self.logger.debug(f"添加子Workable: {child.uuid}")
     
-    def add_local(self, simple: SimpleWorkable) -> None:
-        """
-        添加本地Workable (γ-workable)
-        
-        Args:
-            simple: 要添加的本地SimpleWorkable
-        """
-        if not isinstance(simple, SimpleWorkable):
-            raise WorkableError(f"本地Workable必须是SimpleWorkable: {simple}")
-        
-        self.content.add_local_workable(simple)
-        self.logger.debug(f"添加本地Workable: {simple.uuid}")
-    
     def remove_child(self, uuid: str) -> bool:
         """
-        删除子Workable (β-workable)
+        删除子Workable (仅复杂模式)
         
         Args:
             uuid: 要删除的子Workable的UUID
             
         Returns:
             是否成功删除
+            
+        Raises:
+            AttributeError: 如果在简单模式下调用
         """
+        if self.is_atom():
+            raise AttributeError("简单Workable不能删除子Workable，请先调用make_complex()")
+        
         if uuid not in self.child_workables:
             self.logger.warning(f"尝试删除不存在的子Workable: {uuid}")
             return False
@@ -198,9 +334,47 @@ class ComplexWorkable(Workable):
         self.logger.debug(f"删除子Workable: {uuid}")
         return True
     
+    def get_all_children(self) -> Dict[str, 'Workable']:
+        """
+        获取所有子Workable (仅复杂模式)
+        
+        Returns:
+            所有子Workable的字典
+            
+        Raises:
+            AttributeError: 如果在简单模式下调用
+        """
+        if self.is_atom():
+            raise AttributeError("简单Workable没有子Workable")
+        return self.child_workables.copy()
+    
+    # 本地Workable方法 (所有模式通用)
+    
+    def add_local(self, local: 'Workable') -> None:
+        """
+        添加本地Workable
+        
+        Args:
+            local: 要添加的本地Workable
+        """
+        if not local.is_atom():
+            raise WorkableError(f"本地Workable必须是简单类型: {local}")
+        
+        # 标记为本地
+        local.is_local = True
+        
+        # 添加到本地字典
+        self.local_workables[local.uuid] = local
+        
+        # 如果是复杂模式，还要添加到Content
+        if not self.is_atom():
+            self.content.add_local_workable(local)
+        
+        self.logger.debug(f"添加本地Workable: {local.uuid}")
+    
     def remove_local(self, uuid: str) -> bool:
         """
-        删除本地Workable (γ-workable)
+        删除本地Workable
         
         Args:
             uuid: 要删除的本地Workable的UUID
@@ -208,142 +382,75 @@ class ComplexWorkable(Workable):
         Returns:
             是否成功删除
         """
-        return self.content.remove_local_workable(uuid)
-    
-    def is_atom(self) -> bool:
-        """
-        ComplexWorkable不是原子的
+        if uuid not in self.local_workables:
+            self.logger.warning(f"尝试删除不存在的本地Workable: {uuid}")
+            return False
         
-        Returns:
-            False
-        """
-        return False
-    
-    def get_all_children(self) -> Dict[str, Workable]:
-        """
-        获取所有子Workable
+        # 从本地字典中删除
+        del self.local_workables[uuid]
         
-        Returns:
-            所有子Workable的字典
-        """
-        return self.child_workables.copy()
+        # 如果是复杂模式，还要从Content中删除
+        if not self.is_atom():
+            self.content.remove_local_workable(uuid)
+        
+        self.logger.debug(f"删除本地Workable: {uuid}")
+        return True
     
-    def get_all_locals(self) -> Dict[str, SimpleWorkable]:
+    def get_all_locals(self) -> Dict[str, 'Workable']:
         """
         获取所有本地Workable
         
         Returns:
             所有本地Workable的字典
         """
-        return self.content.workables
+        return self.local_workables.copy()
+    
+    def __repr__(self) -> str:
+        type_str = "SimpleWorkable" if self.is_atom() else "ComplexWorkable"
+        return f"<{type_str} uuid={self.uuid[:6]} name={self.name}>"
 
 
-def convert_simple_to_complex(simple_workable: SimpleWorkable) -> ComplexWorkable:
+# 兼容性转换函数
+
+def convert_simple_to_complex(workable: Workable) -> Workable:
     """
-    将SimpleWorkable转换为ComplexWorkable
+    将简单Workable转换为复杂Workable
     
     Args:
-        simple_workable: 要转换的SimpleWorkable
+        workable: 要转换的简单Workable
         
     Returns:
-        转换后的ComplexWorkable
+        转换后的复杂Workable
         
     Raises:
         ConversionError: 如果转换失败
     """
-    logger = logging.getLogger(__name__)
+    if not workable.is_atom():
+        raise ConversionError(f"只能转换简单类型的Workable: {workable}")
     
-    if not isinstance(simple_workable, SimpleWorkable):
-        raise ConversionError(f"无效的SimpleWorkable对象: {type(simple_workable)}")
-    
-    logger.info(f"开始将SimpleWorkable {simple_workable.uuid} 转换为ComplexWorkable")
-    
-    # 创建一个新的ComplexWorkable，复制基本属性
-    complex_workable = ComplexWorkable(
-        name=simple_workable.name,
-        logic_description=simple_workable.logic_description
-    )
-    
-    # 复制SimpleWorkable中的消息到ComplexWorkable
-    for message in simple_workable.message_manager.get_all_messages():
-        complex_workable.message_manager.append_message(message)
-    
-    # 复制SimpleWorkable中的关系到ComplexWorkable
-    for relation in simple_workable.relation_manager.get_all():
-        # 创建新的Relation对象而不是直接添加原始对象
-        new_relation = Relation(relation.target_uuid, meta=relation.meta)
-        complex_workable.relation_manager.add(new_relation)
-    
-    # 创建一个新的本地SimpleWorkable并添加到ComplexWorkable中
-    local_simple = SimpleWorkable(
-        name=f"{simple_workable.name}_content",
-        logic_description=simple_workable.logic_description,
-        content_str=simple_workable.content_str,
-        content_type=simple_workable.content_type
-    )
-    complex_workable.add_local(local_simple)
-    
-    logger.info(f"SimpleWorkable {simple_workable.uuid} 已成功转换为ComplexWorkable {complex_workable.uuid}")
-    
-    return complex_workable
+    # 使用内部状态转换
+    return workable.make_complex()
 
 
-def convert_complex_to_simple(complex_workable: ComplexWorkable) -> Optional[SimpleWorkable]:
+def convert_complex_to_simple(workable: Workable) -> Optional[Workable]:
     """
-    将ComplexWorkable转换为SimpleWorkable
+    将复杂Workable转换为简单Workable
     
     Args:
-        complex_workable: 要转换的ComplexWorkable
+        workable: 要转换的复杂Workable
         
     Returns:
-        转换后的SimpleWorkable，如果无法转换则返回None
+        转换后的简单Workable，如果无法转换则返回None
     
     Raises:
         ConversionError: 如果转换失败
     """
-    logger = logging.getLogger(__name__)
+    if workable.is_atom():
+        raise ConversionError(f"只能转换复杂类型的Workable: {workable}")
     
-    if not isinstance(complex_workable, ComplexWorkable):
-        raise ConversionError(f"无效的ComplexWorkable对象: {type(complex_workable)}")
-    
-    # 检查是否可以转换：
-    # 1. 无子Workable 
-    # 2. 只有一个本地Workable
-    if complex_workable.child_workables:
-        logger.warning(f"ComplexWorkable {complex_workable.uuid} 包含子Workable，无法转换为SimpleWorkable")
-        return None
-    
-    if len(complex_workable.content.workables) != 1:
-        logger.warning(
-            f"ComplexWorkable {complex_workable.uuid} 包含 {len(complex_workable.content.workables)} 个本地Workable，"
-            f"无法转换为SimpleWorkable（需要恰好1个）"
-        )
-        return None
-    
-    logger.info(f"开始将ComplexWorkable {complex_workable.uuid} 转换为SimpleWorkable")
-    
-    # 获取唯一的本地Workable
-    local_uuid = next(iter(complex_workable.content.workables.keys()))
-    local_workable = complex_workable.content.workables[local_uuid]
-    
-    # 创建一个新的SimpleWorkable，使用本地Workable的内容
-    simple_workable = SimpleWorkable(
-        name=complex_workable.name,
-        logic_description=complex_workable.logic_description,
-        content_str=local_workable.content_str,
-        content_type=local_workable.content_type
-    )
-    
-    # 复制ComplexWorkable中的消息到SimpleWorkable
-    for message in complex_workable.message_manager.get_all_messages():
-        simple_workable.message_manager.append_message(message)
-    
-    # 复制ComplexWorkable中的关系到SimpleWorkable
-    for relation in complex_workable.relation_manager.get_all():
-        # 创建新的Relation对象而不是直接添加原始对象
-        new_relation = Relation(relation.target_uuid, meta=relation.meta)
-        simple_workable.relation_manager.add(new_relation)
-    
-    logger.info(f"ComplexWorkable {complex_workable.uuid} 已成功转换为SimpleWorkable {simple_workable.uuid}")
-    
-    return simple_workable 
+    try:
+        # 使用内部状态转换
+        return workable.make_simple()
+    except ConversionError:
+        # 如果无法转换，返回None
+        return None 

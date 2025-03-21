@@ -1,30 +1,30 @@
 {
   "name": "企业级Web应用程序",
-  "uuid": "5da4ecc2-be9f-4f8c-85df-52bced574a2b",
+  "uuid": "cb0fd9b3-10a0-468a-9f59-aa1b04d171b5",
   "type": "ComplexWorkable",
   "logic_description": "多层次企业应用平台，包含前后端、数据库、DevOps和文档系统",
   "children": [
     {
       "name": "前端系统",
-      "uuid": "4825c908-dcd6-4c38-931d-61c6657f77db",
+      "uuid": "cf11e764-dea6-4c58-bab5-b577e95ce4e2",
       "type": "ComplexWorkable",
       "logic_description": "Web应用程序的前端实现",
       "children": [
         {
           "name": "UI组件",
-          "uuid": "30c3e484-700c-430c-9d55-7aac64d1d3fa",
+          "uuid": "b657113a-cdd6-4a55-bcbd-d3d417816ad8",
           "type": "ComplexWorkable",
           "logic_description": "可重用的前端UI组件库",
           "children": [
             {
               "name": "按钮组件",
-              "uuid": "128ea3a0-79e1-4f21-aae8-4d7caf832693",
+              "uuid": "b18ccce2-81e8-43fb-a0fc-299a37516f58",
               "type": "ComplexWorkable",
               "logic_description": "各种类型和样式的按钮实现",
               "children": [
                 {
                   "name": "主按钮",
-                  "uuid": "bd266aaf-6486-4358-a9a2-31bebb02c78c",
+                  "uuid": "35c3a837-eded-4510-baab-446b4ada21be",
                   "type": "SimpleWorkable",
                   "logic_description": "具有高视觉重要性的主要操作按钮",
                   "children": [],
@@ -33,7 +33,7 @@
                 },
                 {
                   "name": "次按钮",
-                  "uuid": "8a7171bb-274b-418c-b5cb-182f16f34141",
+                  "uuid": "a0cc0f84-9a40-4b8e-aa2a-c33f4ed87353",
                   "type": "SimpleWorkable",
                   "logic_description": "次要操作的按钮样式",
                   "children": [],
@@ -42,7 +42,7 @@
                 },
                 {
                   "name": "图标按钮",
-                  "uuid": "0b8b835c-c7a2-4691-b078-3539591f895e",
+                  "uuid": "c7f25f6e-b06c-4c29-86b3-eb6dd157ac52",
                   "type": "SimpleWorkable",
                   "logic_description": "仅包含图标的轻量级按钮",
                   "children": [],
@@ -51,7 +51,7 @@
                 },
                 {
                   "name": "加载按钮",
-                  "uuid": "0fbf9ae3-0566-4e64-bbdc-b6240ea07ff8",
+                  "uuid": "9ef70584-c195-45bb-a2ca-d002cf195a27",
                   "type": "SimpleWorkable",
                   "logic_description": "具有加载状态的交互按钮",
                   "children": [],
@@ -62,18 +62,19 @@
               "locals": [
                 {
                   "name": "按钮组件_content",
-                  "uuid": "744a3311-8b1c-42ef-a58f-f113b46587c5",
+                  "uuid": "81499f3c-7f93-455f-9a19-d5f3a065c426",
                   "type": "SimpleWorkable",
                   "logic_description": "各种类型和样式的按钮实现",
                   "children": [],
                   "locals": [],
-                  "content_type": "code"
+                  "content_type": "code",
+                  "is_local": true
                 }
               ]
             },
             {
               "name": "表单组件",
-              "uuid": "32532d30-2ddf-4ee4-a911-d0367b4e439e",
+              "uuid": "bb13ea52-92a0-47b1-938f-edb8adac597b",
               "type": "SimpleWorkable",
               "logic_description": "数据输入和验证的表单控件",
               "children": [],
@@ -82,7 +83,7 @@
             },
             {
               "name": "导航组件",
-              "uuid": "280b47e5-90d7-4099-a5c4-45ae8e6095f1",
+              "uuid": "d24f343a-e5d0-439a-a24c-8a09e282bea6",
               "type": "SimpleWorkable",
               "logic_description": "应用程序导航菜单和路由",
               "children": [],
@@ -91,7 +92,7 @@
             },
             {
               "name": "数据表格",
-              "uuid": "ad68bf6e-5372-4d8b-b2c8-0528dd0930c4",
+              "uuid": "ad174d20-7763-463f-9111-768722a39477",
               "type": "SimpleWorkable",
               "logic_description": "用于展示和操作表格数据的组件",
               "children": [],
@@ -100,7 +101,7 @@
             },
             {
               "name": "弹窗组件",
-              "uuid": "e24eed97-44ca-4db7-8fed-ae15fbd954d2",
+              "uuid": "8ca13f22-dabf-4e84-98ec-6915cea2bb57",
               "type": "SimpleWorkable",
               "logic_description": "模态框和对话框实现",
               "children": [],
@@ -112,13 +113,13 @@
         },
         {
           "name": "页面模块",
-          "uuid": "2057e31e-18eb-448d-bedb-585e709fba99",
+          "uuid": "82c3370f-5c11-4416-a3a9-4e480b910ab8",
           "type": "ComplexWorkable",
           "logic_description": "应用程序的各个页面实现",
           "children": [
             {
               "name": "登录页面",
-              "uuid": "55fde304-3ace-4904-9782-e7af2ce80483",
+              "uuid": "a8bcd4b7-1063-43b3-88ce-5335d65ad22d",
               "type": "SimpleWorkable",
               "logic_description": "用户认证和登录流程",
               "children": [],
@@ -127,7 +128,7 @@
             },
             {
               "name": "仪表盘",
-              "uuid": "855bb563-7272-4aa8-8a54-b28254a79519",
+              "uuid": "e9a0d726-c382-41e6-9f60-7dbc63d93acd",
               "type": "SimpleWorkable",
               "logic_description": "系统主仪表盘和数据概览",
               "children": [],
@@ -136,7 +137,7 @@
             },
             {
               "name": "用户管理",
-              "uuid": "b10c1bd9-6471-4b50-919e-9b18cff84a11",
+              "uuid": "78fa67eb-5e8b-409d-86ac-190aad7af9af",
               "type": "SimpleWorkable",
               "logic_description": "用户信息管理和权限设置",
               "children": [],
@@ -145,7 +146,7 @@
             },
             {
               "name": "报表页面",
-              "uuid": "6205aa05-02e4-48ee-aedf-1ea940912078",
+              "uuid": "ee0f50da-af57-48bb-820d-5718ac14ea57",
               "type": "SimpleWorkable",
               "logic_description": "数据统计和报表展示",
               "children": [],
@@ -154,7 +155,7 @@
             },
             {
               "name": "系统设置",
-              "uuid": "f4581995-e5a5-4447-9f14-ab75d03cb491",
+              "uuid": "a7db9837-fdab-47e1-a7fe-8c0527ab2e55",
               "type": "SimpleWorkable",
               "logic_description": "应用程序配置和个性化设置",
               "children": [],
@@ -166,13 +167,13 @@
         },
         {
           "name": "前端服务",
-          "uuid": "eb618f2a-1146-470e-938e-e4fd1995a64f",
+          "uuid": "23f6ddc7-bd08-462a-81b8-e838925ac457",
           "type": "ComplexWorkable",
           "logic_description": "前端与后端交互的服务层",
           "children": [
             {
               "name": "API客户端",
-              "uuid": "e9704052-59e6-4456-bd3d-0c8a3dabde28",
+              "uuid": "8fc8c185-7cd2-491a-a268-84f1b92c8c60",
               "type": "SimpleWorkable",
               "logic_description": "与后端API通信的客户端实现",
               "children": [],
@@ -181,7 +182,7 @@
             },
             {
               "name": "认证服务",
-              "uuid": "fd7cce7e-3eaf-4f0b-abc0-b6e234193ff8",
+              "uuid": "55d93429-fae2-46d3-9d6e-4500782b6d93",
               "type": "SimpleWorkable",
               "logic_description": "管理用户会话和认证状态",
               "children": [],
@@ -190,7 +191,7 @@
             },
             {
               "name": "状态管理",
-              "uuid": "04fdf4d7-af5e-4646-9798-c7c9d00792f4",
+              "uuid": "8f1b5814-6a7b-4247-a3a4-061cc770800a",
               "type": "SimpleWorkable",
               "logic_description": "应用程序状态和数据流管理",
               "children": [],
@@ -199,7 +200,7 @@
             },
             {
               "name": "缓存服务",
-              "uuid": "90e2a4f6-be82-49bc-be9d-4cd6c93a6218",
+              "uuid": "996bfbb7-dc1d-4cca-b871-4ed4245b8093",
               "type": "SimpleWorkable",
               "logic_description": "客户端数据缓存和持久化",
               "children": [],
@@ -208,7 +209,7 @@
             },
             {
               "name": "通知服务",
-              "uuid": "fc54e030-a21d-4422-a478-2661b355bd51",
+              "uuid": "c882752e-d062-4402-9b92-f8730577a4f9",
               "type": "SimpleWorkable",
               "logic_description": "用户通知和消息推送",
               "children": [],
@@ -222,30 +223,31 @@
       "locals": [
         {
           "name": "样式指南",
-          "uuid": "8756d14b-88ab-4d21-b00a-f42712160c38",
+          "uuid": "7b53ec31-9e47-47f2-b9b7-013f907f685f",
           "type": "SimpleWorkable",
           "logic_description": "前端样式规范和主题配置",
           "children": [],
           "locals": [],
-          "content_type": "text"
+          "content_type": "text",
+          "is_local": true
         }
       ]
     },
     {
       "name": "后端系统",
-      "uuid": "b5a11b7f-bbb6-4ba0-8fc5-60d7294437ba",
+      "uuid": "726ca3e7-0f57-4403-98fc-ffb6bd6b8bc9",
       "type": "ComplexWorkable",
       "logic_description": "Web应用程序的服务器端和业务逻辑实现",
       "children": [
         {
           "name": "API层",
-          "uuid": "60d9a5c7-42be-4773-a7e8-2afaeb6ee48b",
+          "uuid": "25d0d780-d432-42f6-b3b8-1cb92dd7ac6b",
           "type": "ComplexWorkable",
           "logic_description": "应用程序接口定义和实现",
           "children": [
             {
               "name": "用户API",
-              "uuid": "ab840991-b84f-4f72-9b8d-2079adc6e805",
+              "uuid": "7e94dfa0-a87a-4614-835b-c69583140b2f",
               "type": "SimpleWorkable",
               "logic_description": "用户相关操作的接口集合",
               "children": [],
@@ -254,7 +256,7 @@
             },
             {
               "name": "认证API",
-              "uuid": "3f479f18-d410-42a1-aa24-77d1914e125e",
+              "uuid": "dccde8d4-a21f-40f6-bf47-ffe57e919bc3",
               "type": "SimpleWorkable",
               "logic_description": "用户认证和授权接口",
               "children": [],
@@ -263,7 +265,7 @@
             },
             {
               "name": "数据API",
-              "uuid": "f2dd356f-2186-4adf-803f-30b54ab6385e",
+              "uuid": "758b9c08-8be6-43d5-903c-8c0126ca460a",
               "type": "SimpleWorkable",
               "logic_description": "数据查询和操作接口",
               "children": [],
@@ -272,7 +274,7 @@
             },
             {
               "name": "管理API",
-              "uuid": "4078063a-6257-48bd-93bc-9b103ee47ae6",
+              "uuid": "c6ecc6bf-2685-42e2-b331-1b5300809bbe",
               "type": "SimpleWorkable",
               "logic_description": "系统管理和配置接口",
               "children": [],
@@ -281,7 +283,7 @@
             },
             {
               "name": "报表API",
-              "uuid": "50ef8024-e2bb-4388-80d2-269f9fd84411",
+              "uuid": "6c152bd7-8778-4cd6-9504-320936d94d06",
               "type": "SimpleWorkable",
               "logic_description": "数据统计和报表生成接口",
               "children": [],
@@ -293,19 +295,19 @@
         },
         {
           "name": "服务层",
-          "uuid": "4e7a88fd-b7f7-4f11-b8cd-c94dbfc60cfe",
+          "uuid": "18b07faf-ccf3-4d87-a054-97d9ed51684b",
           "type": "ComplexWorkable",
           "logic_description": "业务逻辑和领域服务实现",
           "children": [
             {
               "name": "用户服务",
-              "uuid": "b6a60c91-1d4f-4e80-a93d-72707800bc3a",
+              "uuid": "e30c14b8-9c74-4c86-b89d-e45af50d48fd",
               "type": "ComplexWorkable",
               "logic_description": "用户管理和权限控制服务",
               "children": [
                 {
                   "name": "用户创建",
-                  "uuid": "f43b9fbf-e7e6-4085-9fdb-6c3aa86fa5cb",
+                  "uuid": "ffc0ba67-10fe-4ffb-8313-8f40d444b8d6",
                   "type": "SimpleWorkable",
                   "logic_description": "新用户注册和初始化逻辑",
                   "children": [],
@@ -314,7 +316,7 @@
                 },
                 {
                   "name": "用户验证",
-                  "uuid": "7297538c-b1bb-4fe5-987a-e5b75642a840",
+                  "uuid": "22cfde7e-382e-4d04-a8b0-0acb5c2a8b96",
                   "type": "SimpleWorkable",
                   "logic_description": "用户信息验证和安全检查",
                   "children": [],
@@ -323,7 +325,7 @@
                 },
                 {
                   "name": "权限控制",
-                  "uuid": "701a742f-25ad-4417-8a05-302f4a623cfc",
+                  "uuid": "0042047e-5428-4e2d-99be-32beb70ac290",
                   "type": "SimpleWorkable",
                   "logic_description": "基于角色的访问控制实现",
                   "children": [],
@@ -332,7 +334,7 @@
                 },
                 {
                   "name": "用户配置",
-                  "uuid": "757fc838-226d-4d99-a4ab-c33e57d78871",
+                  "uuid": "8b5760aa-0bbe-40a2-8026-bba8fbbecea2",
                   "type": "SimpleWorkable",
                   "logic_description": "用户个性化设置管理",
                   "children": [],
@@ -343,18 +345,19 @@
               "locals": [
                 {
                   "name": "用户服务_content",
-                  "uuid": "b22956a3-fcd1-4953-8619-ee684ae4f230",
+                  "uuid": "db3f55bc-1a93-435d-acce-b35ec673acab",
                   "type": "SimpleWorkable",
                   "logic_description": "用户管理和权限控制服务",
                   "children": [],
                   "locals": [],
-                  "content_type": "code"
+                  "content_type": "code",
+                  "is_local": true
                 }
               ]
             },
             {
               "name": "认证服务",
-              "uuid": "ea2d7a61-d73f-430c-a9eb-17669b36a07a",
+              "uuid": "454c1b12-2192-4a12-8b94-7979849c841a",
               "type": "SimpleWorkable",
               "logic_description": "用户认证和会话管理",
               "children": [],
@@ -363,7 +366,7 @@
             },
             {
               "name": "数据服务",
-              "uuid": "72dc69c2-ca35-47a5-8fe1-2a99f3649048",
+              "uuid": "8edab921-66db-4c10-98d5-00e868f0dc88",
               "type": "SimpleWorkable",
               "logic_description": "数据访问和处理服务",
               "children": [],
@@ -372,7 +375,7 @@
             },
             {
               "name": "通知服务",
-              "uuid": "a82c8151-0d64-4dd8-a180-eb2f5fdcba26",
+              "uuid": "b3c2f26d-0844-41c0-993e-dde33da89248",
               "type": "SimpleWorkable",
               "logic_description": "消息通知和事件处理",
               "children": [],
@@ -381,7 +384,7 @@
             },
             {
               "name": "报表服务",
-              "uuid": "3950b8c9-1962-4afa-8dd0-a97f239f03cb",
+              "uuid": "f19c217e-e701-4640-a4c1-9d6c8f811b97",
               "type": "SimpleWorkable",
               "logic_description": "数据统计和报表生成",
               "children": [],
@@ -393,13 +396,13 @@
         },
         {
           "name": "数据访问层",
-          "uuid": "b59beb49-579b-4184-a59d-55447cb1bfbb",
+          "uuid": "c77b6ad7-66a2-4851-9ab8-8e62e19b0bee",
           "type": "ComplexWorkable",
           "logic_description": "数据库交互和ORM实现",
           "children": [
             {
               "name": "用户DAO",
-              "uuid": "8cda985e-d13a-4865-a3f8-310127ff37c2",
+              "uuid": "d5a79423-f580-4f93-9d8d-d8197ecced87",
               "type": "SimpleWorkable",
               "logic_description": "用户数据访问对象",
               "children": [],
@@ -408,7 +411,7 @@
             },
             {
               "name": "配置DAO",
-              "uuid": "08319adc-2fa5-49be-ac1a-1b5119160bb3",
+              "uuid": "12598cec-ccad-4a8e-aebb-0d1e4175f969",
               "type": "SimpleWorkable",
               "logic_description": "系统配置数据访问",
               "children": [],
@@ -417,7 +420,7 @@
             },
             {
               "name": "报表DAO",
-              "uuid": "265b617a-34f9-43ef-96e1-d69ad17793a2",
+              "uuid": "63cbc39e-268d-4f84-bf43-99b7be9d2530",
               "type": "SimpleWorkable",
               "logic_description": "报表数据访问和查询",
               "children": [],
@@ -426,7 +429,7 @@
             },
             {
               "name": "事务管理",
-              "uuid": "8827b377-72d9-4f72-9a93-43d0050cd00d",
+              "uuid": "bce1ed1a-1294-4d9e-8665-488b324aabe5",
               "type": "SimpleWorkable",
               "logic_description": "数据库事务控制",
               "children": [],
@@ -435,7 +438,7 @@
             },
             {
               "name": "缓存管理",
-              "uuid": "201ff6f2-2741-461c-a7c2-63abd431c7d6",
+              "uuid": "9c907c95-c579-4303-861a-21607343c6b4",
               "type": "SimpleWorkable",
               "logic_description": "数据缓存和性能优化",
               "children": [],
@@ -449,30 +452,31 @@
       "locals": [
         {
           "name": "后端配置",
-          "uuid": "ee059758-c322-467c-895e-063cdb36bf6f",
+          "uuid": "0ab5c6d2-ece5-43ff-a2dc-df13fe9bc400",
           "type": "SimpleWorkable",
           "logic_description": "后端系统配置和环境设置",
           "children": [],
           "locals": [],
-          "content_type": "text"
+          "content_type": "text",
+          "is_local": true
         }
       ]
     },
     {
       "name": "数据库系统",
-      "uuid": "8f8b15b1-c36a-4042-9775-1192a92887b7",
+      "uuid": "f9dcf518-c3f3-427b-b12f-b694eb36f512",
       "type": "ComplexWorkable",
       "logic_description": "应用程序的数据存储和管理系统",
       "children": [
         {
           "name": "数据库结构",
-          "uuid": "8d42caea-f706-45c6-b489-1e7cb4adeac3",
+          "uuid": "df90164b-f21b-4c77-8dba-ba654a92bbc4",
           "type": "ComplexWorkable",
           "logic_description": "数据库表结构和关系定义",
           "children": [
             {
               "name": "用户表",
-              "uuid": "806b2254-3997-45ac-8982-a6ee79c43913",
+              "uuid": "e362353e-708d-4b5f-a35d-1ab32218184d",
               "type": "SimpleWorkable",
               "logic_description": "存储用户账户和个人信息",
               "children": [],
@@ -481,7 +485,7 @@
             },
             {
               "name": "角色表",
-              "uuid": "5a665119-3c77-4de4-a16f-85a1e72f7b70",
+              "uuid": "9c527ce9-6248-49bf-b99b-cdd5b6bd20ed",
               "type": "SimpleWorkable",
               "logic_description": "用户角色和权限定义",
               "children": [],
@@ -490,7 +494,7 @@
             },
             {
               "name": "配置表",
-              "uuid": "ce4ff8dd-fb62-45f3-8f32-199f3396b9ec",
+              "uuid": "26bd3696-239d-4f55-8765-2abd438f9e29",
               "type": "SimpleWorkable",
               "logic_description": "系统配置和参数存储",
               "children": [],
@@ -499,7 +503,7 @@
             },
             {
               "name": "日志表",
-              "uuid": "68ba9865-9ec8-4246-be06-a38bdf25cc12",
+              "uuid": "c7bf0ee7-2a27-4227-9d07-c931570ba5fe",
               "type": "SimpleWorkable",
               "logic_description": "系统操作和审计日志",
               "children": [],
@@ -508,7 +512,7 @@
             },
             {
               "name": "数据表",
-              "uuid": "54d8fc76-b4a3-4c9b-ac9d-cc0d8369379a",
+              "uuid": "3512a113-c9b1-4e8b-8aaf-c78ad4faadf8",
               "type": "SimpleWorkable",
               "logic_description": "业务数据存储",
               "children": [],
@@ -520,13 +524,13 @@
         },
         {
           "name": "存储过程",
-          "uuid": "03d1f359-11d5-47e6-b1e1-6152d4774f22",
+          "uuid": "40171587-40b5-446e-be4d-e519e2aea118",
           "type": "ComplexWorkable",
           "logic_description": "数据库存储过程和函数",
           "children": [
             {
               "name": "用户管理过程",
-              "uuid": "4a823f36-a430-4a55-b862-5e4b8835b145",
+              "uuid": "3773fe1e-c2c5-4f0d-b5d9-c3b38157c784",
               "type": "SimpleWorkable",
               "logic_description": "用户数据管理存储过程",
               "children": [],
@@ -535,7 +539,7 @@
             },
             {
               "name": "数据聚合过程",
-              "uuid": "3f4da123-d3ad-49b0-ae2f-14bf82d92d25",
+              "uuid": "63a2e98b-dfaf-44ae-9b43-ed8781a9e9cf",
               "type": "SimpleWorkable",
               "logic_description": "数据统计和聚合计算",
               "children": [],
@@ -544,7 +548,7 @@
             },
             {
               "name": "审计过程",
-              "uuid": "1f40aec8-d07c-41ab-8003-8d9d88127f6f",
+              "uuid": "436d88bb-6ea4-4dd1-b2d5-60e576719f2b",
               "type": "SimpleWorkable",
               "logic_description": "系统审计和日志记录",
               "children": [],
@@ -553,7 +557,7 @@
             },
             {
               "name": "数据清理过程",
-              "uuid": "90ff289c-96cd-4358-b0a4-7ee83541c0de",
+              "uuid": "44a262a2-839d-4ad3-a165-310eae2e0899",
               "type": "SimpleWorkable",
               "logic_description": "数据归档和清理操作",
               "children": [],
@@ -562,7 +566,7 @@
             },
             {
               "name": "报表生成过程",
-              "uuid": "5c1374a9-557c-46a6-bf59-c9d1d68bda57",
+              "uuid": "0452c95a-7e54-4918-aac2-3e09e7f73a59",
               "type": "SimpleWorkable",
               "logic_description": "复杂报表数据生成",
               "children": [],
@@ -574,13 +578,13 @@
         },
         {
           "name": "索引和优化",
-          "uuid": "e4c26eed-1d05-41b4-8b8f-5e3150c8c7e5",
+          "uuid": "b1eac11a-168b-424e-8b70-1dce2a922565",
           "type": "ComplexWorkable",
           "logic_description": "数据库索引和性能优化配置",
           "children": [
             {
               "name": "主键索引",
-              "uuid": "0802774b-7e3b-43b6-bced-26a56e1da482",
+              "uuid": "c3db6bd6-3d9d-4365-9397-8b5d31fb3788",
               "type": "SimpleWorkable",
               "logic_description": "表主键索引定义",
               "children": [],
@@ -589,7 +593,7 @@
             },
             {
               "name": "外键索引",
-              "uuid": "e24bb3ae-9c2b-47ec-902f-48e299434f0d",
+              "uuid": "fbc85973-d9e0-4820-a473-ebd9c87da9b7",
               "type": "SimpleWorkable",
               "logic_description": "表关系和外键索引",
               "children": [],
@@ -598,7 +602,7 @@
             },
             {
               "name": "查询索引",
-              "uuid": "37db9b50-30aa-4b2b-ba7e-cfd7c5607ab0",
+              "uuid": "112526ce-34c2-4e07-999b-fb265cafab62",
               "type": "SimpleWorkable",
               "logic_description": "常用查询性能优化索引",
               "children": [],
@@ -607,7 +611,7 @@
             },
             {
               "name": "全文索引",
-              "uuid": "09d5206b-e847-4b70-984b-dc89c683a113",
+              "uuid": "933c3c8e-d2f7-4433-8007-7914a94f5e24",
               "type": "SimpleWorkable",
               "logic_description": "文本搜索全文索引",
               "children": [],
@@ -616,7 +620,7 @@
             },
             {
               "name": "性能优化配置",
-              "uuid": "78870937-3802-4ce6-8e48-9bbccc87ada4",
+              "uuid": "c6839497-cbed-4c86-b73a-6fb33e491944",
               "type": "SimpleWorkable",
               "logic_description": "数据库性能参数设置",
               "children": [],
@@ -630,12 +634,13 @@
       "locals": [
         {
           "name": "数据库配置",
-          "uuid": "dc5b7d53-e44c-4c2c-823d-17b36b9d6d6a",
+          "uuid": "173aa045-a1d6-4657-a94f-bb5ab39b77c5",
           "type": "SimpleWorkable",
           "logic_description": "数据库连接和配置信息",
           "children": [],
           "locals": [],
-          "content_type": "text"
+          "content_type": "text",
+          "is_local": true
         }
       ]
     }
