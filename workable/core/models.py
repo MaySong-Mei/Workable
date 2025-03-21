@@ -1,26 +1,94 @@
 """
-基础数据模型 - 定义Workable系统中使用的数据结构
+Workable基础数据模型 - 定义系统中使用的基础数据模型
+增强Frame作为索引实体的功能
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, Any
 import uuid
 
-@dataclass
 class WorkableFrame:
     """
-    Workable的轻量引用，记录快照和引用信息
-    用于解耦工作单元的实际实现
-    """
-    name: str
-    logic_description: str
-    snapshot: str = ""
-    exref: Optional[str] = None  # 外部β-workable引用UUID
-    lnref: Optional[str] = None  # 本地γ-workable引用UUID
+    Workable框架，用于索引和引用Workable
     
+    作为workable框架级别设计中的核心索引实体，管理引用和顺序
+    """
+    
+    def __init__(self, name: str, logic_description: str, 
+                 seq: int = 0,
+                 frame_type: str = "reference", 
+                 exref: Optional[str] = None,
+                 metadata: Optional[Dict[str, Any]] = None):
+        """
+        初始化WorkableFrame
+        
+        Args:
+            name: 名称
+            logic_description: 逻辑描述
+            seq: 序列号，用于顺序索引
+            frame_type: 框架类型 (reference, child, local)
+            exref: 外部引用UUID
+            metadata: 元数据字典
+        """
+        self.name = name
+        self.logic_description = logic_description
+        self.seq = seq  # 序列号用于在Content中的有序存储
+        self.frame_type = frame_type  # 框架类型
+        self.exref = exref  # 外部引用UUID
+        self.metadata = metadata or {}  # 元数据字典
+        
     def is_external(self) -> bool:
-        """判断当前Frame是否引用外部Workable"""
-        return self.exref is not None
+        """
+        检查是否为外部引用
+        
+        Returns:
+            是否为外部引用
+        """
+        return self.exref is not None and self.frame_type != "local"
+        
+    def is_local(self) -> bool:
+        """
+        检查是否为本地引用
+        
+        Returns:
+            是否为本地引用
+        """
+        return self.frame_type == "local"
+        
+    def get_reference_uuid(self) -> Optional[str]:
+        """
+        获取引用的UUID
+        
+        Returns:
+            引用的UUID，如果没有则返回None
+        """
+        return self.exref
+        
+    def update_metadata(self, key: str, value: Any) -> None:
+        """
+        更新元数据
+        
+        Args:
+            key: 键
+            value: 值
+        """
+        self.metadata[key] = value
+        
+    def get_metadata(self, key: str, default: Any = None) -> Any:
+        """
+        获取元数据
+        
+        Args:
+            key: 键
+            default: 默认值
+            
+        Returns:
+            元数据值
+        """
+        return self.metadata.get(key, default)
+    
+    def __repr__(self) -> str:
+        return f"<WorkableFrame type={self.frame_type} name={self.name} seq={self.seq}>"
 
 @dataclass
 class Message:
@@ -42,12 +110,23 @@ class Message:
 @dataclass
 class Relation:
     """
-    关系对象，描述当前Workable对外部Workable的影响和依赖关系
+    关系模型
     """
-    target_uuid: str
-    meta: Dict = None
     
-    def __post_init__(self):
-        """初始化元数据字典"""
-        if self.meta is None:
-            self.meta = {} 
+    def __init__(self, source_uuid: str, target_uuid: str, relation_type: str, description: str = ""):
+        """
+        初始化关系
+        
+        Args:
+            source_uuid: 源UUID
+            target_uuid: 目标UUID
+            relation_type: 关系类型
+            description: 关系描述
+        """
+        self.source_uuid = source_uuid
+        self.target_uuid = target_uuid
+        self.relation_type = relation_type
+        self.description = description
+    
+    def __repr__(self) -> str:
+        return f"<Relation {self.source_uuid}-{self.relation_type}->{self.target_uuid}>" 

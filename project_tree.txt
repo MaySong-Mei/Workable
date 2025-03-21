@@ -1,4 +1,4 @@
-Web应用程序 (ComplexWorkable)
+企业级Web应用程序 (ComplexWorkable)
 │   ├── 前端系统 (ComplexWorkable)
 │   │   ├── 样式指南 (SimpleWorkable) [LOCAL]
 │   │   ├── UI组件 (ComplexWorkable)

@@ -4,7 +4,7 @@
 
 import logging
 import json
-from typing import Dict, List, Optional, Union, Any, Type, TYPE_CHECKING
+from typing import Dict, List, Optional, Union, Any, Type, TYPE_CHECKING, Set
 
 from workable.core.exceptions import VisualizationError
 
@@ -157,212 +157,166 @@ class WorkableVisualizer:
     
     # 新方法：直接使用Workable对象
 
-    def generate_tree(self, workable: 'Workable') -> Dict[str, Any]:
+    def generate_tree(self, workable: 'Workable', max_depth: int = 10, 
+                     depth: int = 0, visited: Optional[Set[str]] = None) -> Dict[str, Any]:
         """
-        将Workable对象转换为树形结构的字典
+        生成Workable的树状结构
         
         Args:
-            workable: Workable对象
+            workable: 要可视化的Workable
+            max_depth: 最大深度
+            depth: 当前深度
+            visited: 已访问的Workable UUID集合
             
         Returns:
-            树形结构的字典
+            树状结构的字典
         """
-        try:
-            result = {
-                "name": workable.name,
-                "uuid": workable.uuid,
-                "type": "SimpleWorkable" if workable.is_atom() else "ComplexWorkable",
-                "logic_description": workable.logic_description,
-                "children": [],
-                "locals": []
-            }
+        if visited is None:
+            visited = set()
             
-            # 添加简单工作单元特有属性
-            if workable.is_atom():
-                result["content_type"] = workable.content_type
-                
-            # 处理复杂工作单元
-            elif workable.is_complex():
-                # 添加子Workable
-                for child_uuid, child in workable.child_workables.items():
-                    child_tree = self.generate_tree(child)
-                    result["children"].append(child_tree)
+        if workable.uuid in visited:
+            return {"name": f"{workable.name} (循环引用)", "uuid": workable.uuid}
             
-            # 添加本地Workable (对所有类型)
-            for local_uuid, local in workable.local_workables.items():
-                local_tree = self.generate_tree(local)
-                local_tree["is_local"] = True
-                result["locals"].append(local_tree)
-                    
-            return result
-        except Exception as e:
-            self.logger.error(f"生成树形结构失败: {str(e)}")
-            raise VisualizationError(f"生成树形结构失败: {str(e)}")
+        visited.add(workable.uuid)
+        
+        if depth >= max_depth:
+            return {"name": f"{workable.name} (达到最大深度)", "uuid": workable.uuid}
+        
+        result = {
+            "name": workable.name,
+            "uuid": workable.uuid,
+            "description": workable.logic_description,
+            "is_atom": workable.is_atom()
+        }
+        
+        # 如果是简单Workable，添加内容信息
+        if workable.is_atom():
+            result["content_type"] = workable.content_type
+            # 截断可能很长的内容
+            content = workable.content_str or ""
+            if len(content) > 100:
+                content = content[:97] + "..."
+            result["content"] = content
+        else:
+            # 添加子Workable
+            children = []
+            for child in workable.get_children():
+                children.append(self.generate_tree(
+                    child, max_depth, depth + 1, visited.copy()
+                ))
+            result["children"] = children
+            
+            # 添加本地Workable
+            locals = []
+            for local in workable.get_locals():
+                local_info = {
+                    "name": local.name,
+                    "uuid": local.uuid,
+                    "description": local.logic_description,
+                    "content_type": local.content_type
+                }
+                # 截断可能很长的内容
+                content = local.content_str or ""
+                if len(content) > 100:
+                    content = content[:97] + "..."
+                local_info["content"] = content
+                locals.append(local_info)
+            result["locals"] = locals
+            
+        return result
     
-    def export_tree_to_json(self, workable: 'Workable', filepath: str) -> None:
+    def export_tree_to_json(self, workable: 'Workable', max_depth: int = 10) -> Dict[str, Any]:
         """
-        将Workable树结构导出为JSON文件
+        将Workable树导出为JSON对象
         
         Args:
-            workable: Workable对象
-            filepath: 输出文件路径
+            workable: 根Workable
+            max_depth: 最大深度
+            
+        Returns:
+            JSON对象
+            
+        Raises:
+            VisualizationError: 如果导出失败
         """
         try:
-            tree = self.generate_tree(workable)
-            with open(filepath, 'w', encoding='utf-8') as f:
-                json.dump(tree, f, ensure_ascii=False, indent=2)
-            self.logger.info(f"树形结构已导出到文件: {filepath}")
+            tree = self.generate_tree(workable, max_depth)
+            return tree
         except Exception as e:
-            self.logger.error(f"导出树形结构失败: {str(e)}")
-            raise VisualizationError(f"导出树形结构失败: {str(e)}")
+            error_msg = f"导出树到JSON失败: {str(e)}"
+            self.logger.error(error_msg)
+            raise VisualizationError(error_msg)
     
     def generate_ascii_tree(self, workable: 'Workable') -> str:
         """
-        生成Workable的ASCII树形图
+        生成ASCII格式的树
         
         Args:
-            workable: Workable对象
+            workable: 根Workable
             
         Returns:
-            ASCII树形图字符串
+            ASCII树字符串
+            
+        Raises:
+            VisualizationError: 如果生成失败
         """
         try:
             lines = []
-            self._generate_ascii_tree_recursive(workable, "", "", lines)
+            self._generate_ascii_tree_recursive(workable, "", True, lines)
             return "\n".join(lines)
         except Exception as e:
-            self.logger.error(f"生成ASCII树形图失败: {str(e)}")
-            raise VisualizationError(f"生成ASCII树形图失败: {str(e)}")
+            error_msg = f"生成ASCII树失败: {str(e)}"
+            self.logger.error(error_msg)
+            raise VisualizationError(error_msg)
     
     def _generate_ascii_tree_recursive(self, workable: 'Workable', prefix: str, 
-                                     branch: str, lines: list) -> None:
+                                     is_last: bool, lines: List[str]) -> None:
         """
-        递归生成ASCII树形图
+        递归生成ASCII树
         
         Args:
-            workable: Workable对象
-            prefix: 前缀
-            branch: 分支字符
-            lines: 结果行列表
+            workable: 当前Workable
+            prefix: 当前行的前缀
+            is_last: 是否是当前级别的最后一个节点
+            lines: 输出行列表
         """
-        # 确定工作单元类型
-        workable_type = "SimpleWorkable" if workable.is_atom() else "ComplexWorkable"
-        
-        # 检查是否为本地工作单元
-        is_local = hasattr(workable, 'is_local') and workable.is_local
-        local_mark = " [LOCAL]" if is_local else ""
-        
         # 添加当前节点
-        lines.append(f"{prefix}{branch}{workable.name} ({workable_type}){local_mark}")
+        type_str = "Simple" if workable.is_atom() else "Complex"
+        node = f"{workable.name} [{type_str}] ({workable.uuid[:6]})"
+        lines.append(f"{prefix}{'└── ' if is_last else '├── '}{node}")
         
-        # 计算子节点的前缀
-        next_prefix = prefix + ("    " if branch == "└── " else "│   ")
+        # 为子节点准备前缀
+        new_prefix = f"{prefix}{'    ' if is_last else '│   '}"
         
-        # 先处理本地工作单元
-        if workable.local_workables:
-            local_items = list(workable.local_workables.items())
-            for i, (local_uuid, local) in enumerate(local_items):
-                is_last_local = (i == len(local_items) - 1) and (not workable.is_complex() or not workable.child_workables)
-                local_branch = "└── " if is_last_local else "├── "
-                self._generate_ascii_tree_recursive(local, next_prefix, local_branch, lines)
-        
-        # 再处理子工作单元 (仅复杂工作单元)
-        if workable.is_complex() and workable.child_workables:
-            child_items = list(workable.child_workables.items())
-            for i, (child_uuid, child) in enumerate(child_items):
-                is_last_child = (i == len(child_items) - 1)
-                child_branch = "└── " if is_last_child else "├── "
-                self._generate_ascii_tree_recursive(child, next_prefix, child_branch, lines)
-    
-    def export_ascii_tree_to_file(self, workable: 'Workable', filepath: str) -> None:
-        """
-        将ASCII树形图导出到文件
-        
-        Args:
-            workable: Workable对象
-            filepath: 输出文件路径
-        """
-        try:
-            ascii_tree = self.generate_ascii_tree(workable)
-            with open(filepath, 'w', encoding='utf-8') as f:
-                f.write(ascii_tree)
-            self.logger.info(f"ASCII树形图已导出到文件: {filepath}")
-        except Exception as e:
-            self.logger.error(f"导出ASCII树形图失败: {str(e)}")
-            raise VisualizationError(f"导出ASCII树形图失败: {str(e)}")
-    
-    def generate_workable_list(self, workable: 'Workable') -> List[Dict[str, Any]]:
-        """
-        生成Workable的扁平列表
-        
-        Args:
-            workable: Workable对象
+        # 如果是复杂Workable，添加子节点和本地节点
+        if not workable.is_atom():
+            # 获取本地Workable
+            locals = workable.get_locals()
             
-        Returns:
-            Workable信息的扁平列表
-        """
-        try:
-            result = []
-            self._collect_workables_recursive(workable, result)
-            return result
-        except Exception as e:
-            self.logger.error(f"生成Workable列表失败: {str(e)}")
-            raise VisualizationError(f"生成Workable列表失败: {str(e)}")
-    
-    def _collect_workables_recursive(self, workable: 'Workable', 
-                                   result: List[Dict[str, Any]]) -> None:
-        """
-        递归收集所有Workable
-        
-        Args:
-            workable: Workable对象
-            result: 结果列表
-        """
-        # 添加当前Workable
-        workable_type = "SimpleWorkable" if workable.is_atom() else "ComplexWorkable"
-        is_local = hasattr(workable, 'is_local') and workable.is_local
-        
-        result.append({
-            "name": workable.name,
-            "uuid": workable.uuid,
-            "type": workable_type,
-            "logic_description": workable.logic_description,
-            "is_local": is_local
-        })
-        
-        # 处理本地Workable
-        for local_uuid, local in workable.local_workables.items():
-            local_info = {
-                "name": local.name,
-                "uuid": local.uuid,
-                "type": "SimpleWorkable" if local.is_atom() else "ComplexWorkable",
-                "logic_description": local.logic_description,
-                "is_local": True,
-                "parent_uuid": workable.uuid
-            }
-            result.append(local_info)
-        
-        # 处理复杂Workable子节点
-        if workable.is_complex():
-            for child_uuid, child in workable.child_workables.items():
-                self._collect_workables_recursive(child, result)
-    
-    def export_workable_list_to_json(self, workable: 'Workable', filepath: str) -> None:
-        """
-        将Workable列表导出为JSON文件
-        
-        Args:
-            workable: Workable对象
-            filepath: 输出文件路径
-        """
-        try:
-            workable_list = self.generate_workable_list(workable)
-            with open(filepath, 'w', encoding='utf-8') as f:
-                json.dump(workable_list, f, ensure_ascii=False, indent=2)
-            self.logger.info(f"Workable列表已导出到文件: {filepath}")
-        except Exception as e:
-            self.logger.error(f"导出Workable列表失败: {str(e)}")
-            raise VisualizationError(f"导出Workable列表失败: {str(e)}")
+            # 处理本地Workable
+            if locals:
+                local_prefix = f"{new_prefix}├── Locals:"
+                lines.append(local_prefix)
+                
+                for i, local in enumerate(locals):
+                    is_last_local = i == len(locals) - 1
+                    local_node = f"{local.name} [Local] ({local.uuid[:6]})"
+                    lines.append(f"{new_prefix}│   {'└── ' if is_last_local else '├── '}{local_node}")
+            
+            # 获取子Workable
+            children = workable.get_children()
+            
+            # 处理子Workable
+            if children:
+                if locals:
+                    lines.append(f"{new_prefix}└── Children:")
+                    new_prefix = f"{new_prefix}    "
+                else:
+                    lines.append(f"{new_prefix}├── Children:")
+                
+                for i, child in enumerate(children):
+                    is_last_child = i == len(children) - 1
+                    self._generate_ascii_tree_recursive(child, new_prefix, is_last_child, lines)
     
     def _build_parent_map(self) -> Dict[str, str]:
         """
