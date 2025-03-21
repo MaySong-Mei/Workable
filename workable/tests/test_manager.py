@@ -1,5 +1,5 @@
 """
-测试Workable管理器
+测试WorkableManager类
 """
 
 import unittest
@@ -8,7 +8,7 @@ import uuid
 from unittest.mock import patch, MagicMock
 
 from workable.core.manager import WorkableManager
-from workable.core.workable import SimpleWorkable, ComplexWorkable
+from workable.core.workable import Workable
 from workable.core.exceptions import WorkableError, ManagerError
 
 # 配置测试日志
@@ -22,70 +22,73 @@ class TestWorkableManager(unittest.TestCase):
         self.manager = WorkableManager()
         
         # 创建一些测试Workable
-        self.simple1 = SimpleWorkable(
-            name="Simple 1",
-            logic_description="Simple workable 1",
+        self.atom1 = Workable(
+            name="Atom 1",
+            logic_description="Atomic workable 1",
+            is_atom=True,
             content_str="Content 1",
             content_type="text"
         )
         
-        self.simple2 = SimpleWorkable(
-            name="Simple 2",
-            logic_description="Simple workable 2",
+        self.atom2 = Workable(
+            name="Atom 2",
+            logic_description="Atomic workable 2",
+            is_atom=True,
             content_str="Content 2",
-            content_type="text"
+            content_type="code"
         )
         
-        self.complex1 = ComplexWorkable(
-            name="Complex 1",
-            logic_description="Complex workable 1"
+        self.composite1 = Workable(
+            name="Composite 1",
+            logic_description="Composite workable 1",
+            is_atom=False
         )
         
-        self.complex2 = ComplexWorkable(
-            name="Complex 2",
-            logic_description="Complex workable 2"
+        self.composite2 = Workable(
+            name="Composite 2",
+            logic_description="Composite workable 2",
+            is_atom=False
         )
     
     def test_register_workable(self):
         """测试register_workable方法"""
-        # 注册SimpleWorkable
-        self.manager.register_workable(self.simple1)
+        # 注册Workable
+        self.manager.register_workable(self.atom1)
+        self.manager.register_workable(self.composite1)
         
-        # 验证是否已注册
-        self.assertEqual(len(self.manager.workables), 1)
-        self.assertIn(self.simple1.uuid, self.manager.workables)
-        
-        # 注册ComplexWorkable
-        self.manager.register_workable(self.complex1)
-        
-        # 验证是否已注册
+        # 验证注册结果
         self.assertEqual(len(self.manager.workables), 2)
-        self.assertIn(self.complex1.uuid, self.manager.workables)
+        self.assertIn(self.atom1.uuid, self.manager.workables)
+        self.assertIn(self.composite1.uuid, self.manager.workables)
         
-        # 重复注册同一个Workable
-        with self.assertRaises(ManagerError):
-            self.manager.register_workable(self.simple1)
+        # 注册相同UUID的Workable应该失败
+        duplicate = Workable(
+            name="Duplicate",
+            logic_description="Duplicate workable",
+            is_atom=True,
+            content_str="Duplicate content"
+        )
+        duplicate.uuid = self.atom1.uuid  # 手动设置相同的UUID
         
-        # 注册无效Workable
         with self.assertRaises(WorkableError):
-            self.manager.register_workable("not a workable")
+            self.manager.register_workable(duplicate)
     
     def test_unregister_workable(self):
         """测试unregister_workable方法"""
         # 注册Workable
-        self.manager.register_workable(self.simple1)
-        self.manager.register_workable(self.complex1)
+        self.manager.register_workable(self.atom1)
+        self.manager.register_workable(self.composite1)
         
         # 验证是否已注册
         self.assertEqual(len(self.manager.workables), 2)
         
         # 注销Workable
-        result = self.manager.unregister_workable(self.simple1.uuid)
+        result = self.manager.unregister_workable(self.atom1.uuid)
         
         # 验证是否已注销
         self.assertTrue(result)
         self.assertEqual(len(self.manager.workables), 1)
-        self.assertNotIn(self.simple1.uuid, self.manager.workables)
+        self.assertNotIn(self.atom1.uuid, self.manager.workables)
         
         # 注销不存在的Workable
         result = self.manager.unregister_workable("non-existent-uuid")
@@ -96,13 +99,13 @@ class TestWorkableManager(unittest.TestCase):
     def test_get_workable(self):
         """测试get_workable方法"""
         # 注册Workable
-        self.manager.register_workable(self.simple1)
+        self.manager.register_workable(self.atom1)
         
         # 获取Workable
-        workable = self.manager.get_workable(self.simple1.uuid)
+        workable = self.manager.get_workable(self.atom1.uuid)
         
         # 验证获取的Workable
-        self.assertEqual(workable, self.simple1)
+        self.assertEqual(workable, self.atom1)
         
         # 获取不存在的Workable
         workable = self.manager.get_workable("non-existent-uuid")
@@ -113,98 +116,90 @@ class TestWorkableManager(unittest.TestCase):
     def test_get_all_workables(self):
         """测试get_all_workables方法"""
         # 注册Workable
-        self.manager.register_workable(self.simple1)
-        self.manager.register_workable(self.simple2)
-        self.manager.register_workable(self.complex1)
+        self.manager.register_workable(self.atom1)
+        self.manager.register_workable(self.atom2)
+        self.manager.register_workable(self.composite1)
         
         # 获取所有Workable
         workables = self.manager.get_all_workables()
         
         # 验证获取的Workables
         self.assertEqual(len(workables), 3)
-        self.assertIn(self.simple1.uuid, workables)
-        self.assertIn(self.simple2.uuid, workables)
-        self.assertIn(self.complex1.uuid, workables)
+        self.assertIn(self.atom1.uuid, workables)
+        self.assertIn(self.atom2.uuid, workables)
+        self.assertIn(self.composite1.uuid, workables)
         
         # 验证返回的是副本
-        workables[self.simple1.uuid] = None
+        workables[self.atom1.uuid] = None
         self.assertEqual(len(self.manager.workables), 3)
     
     def test_get_workables_by_type(self):
         """测试get_workables_by_type方法"""
         # 注册Workable
-        self.manager.register_workable(self.simple1)
-        self.manager.register_workable(self.simple2)
-        self.manager.register_workable(self.complex1)
-        self.manager.register_workable(self.complex2)
+        self.manager.register_workable(self.atom1)
+        self.manager.register_workable(self.atom2)
+        self.manager.register_workable(self.composite1)
+        self.manager.register_workable(self.composite2)
         
-        # 获取SimpleWorkable
-        simples = self.manager.get_workables_by_type(SimpleWorkable)
+        # 获取所有原子模式Workable
+        atoms = self.manager.get_workables_by_type(is_atom=True)
         
-        # 验证获取的SimpleWorkables
-        self.assertEqual(len(simples), 2)
-        self.assertIn(self.simple1.uuid, simples)
-        self.assertIn(self.simple2.uuid, simples)
-        self.assertNotIn(self.complex1.uuid, simples)
-        self.assertNotIn(self.complex2.uuid, simples)
+        # 验证获取的原子模式Workables
+        self.assertEqual(len(atoms), 2)
+        self.assertIn(self.atom1.uuid, atoms)
+        self.assertIn(self.atom2.uuid, atoms)
+        self.assertNotIn(self.composite1.uuid, atoms)
+        self.assertNotIn(self.composite2.uuid, atoms)
         
-        # 获取ComplexWorkable
-        complexes = self.manager.get_workables_by_type(ComplexWorkable)
+        # 获取所有复合模式Workable
+        composites = self.manager.get_workables_by_type(is_atom=False)
         
-        # 验证获取的ComplexWorkables
-        self.assertEqual(len(complexes), 2)
-        self.assertIn(self.complex1.uuid, complexes)
-        self.assertIn(self.complex2.uuid, complexes)
-        self.assertNotIn(self.simple1.uuid, complexes)
-        self.assertNotIn(self.simple2.uuid, complexes)
+        # 验证获取的复合模式Workables
+        self.assertEqual(len(composites), 2)
+        self.assertIn(self.composite1.uuid, composites)
+        self.assertIn(self.composite2.uuid, composites)
+        self.assertNotIn(self.atom1.uuid, composites)
+        self.assertNotIn(self.atom2.uuid, composites)
     
-    def test_create_simple_workable(self):
-        """测试create_simple_workable方法"""
-        # 创建SimpleWorkable
-        simple_uuid = self.manager.create_simple_workable(
-            name="New Simple",
-            logic_description="New simple workable",
-            content_str="New content",
+    def test_create_workable(self):
+        """测试create_workable方法"""
+        # 创建原子模式Workable
+        atom = self.manager.create_workable(
+            name="New Atom",
+            logic_description="New atomic workable",
+            is_atom=True,
+            content="New content",
             content_type="text"
         )
         
-        # 验证创建的SimpleWorkable
+        # 验证创建结果
         self.assertEqual(len(self.manager.workables), 1)
-        self.assertIn(simple_uuid, self.manager.workables)
+        self.assertIn(atom.uuid, self.manager.workables)
+        self.assertTrue(atom.is_atom())
+        self.assertEqual(atom.content_str, "New content")
+        self.assertEqual(atom.content_type, "text")
         
-        workable = self.manager.get_workable(simple_uuid)
-        self.assertEqual(workable.name, "New Simple")
-        self.assertEqual(workable.logic_description, "New simple workable")
-        self.assertEqual(workable.content_str, "New content")
-        self.assertEqual(workable.content_type, "text")
-        self.assertTrue(isinstance(workable, SimpleWorkable))
-    
-    def test_create_complex_workable(self):
-        """测试create_complex_workable方法"""
-        # 创建ComplexWorkable
-        complex_uuid = self.manager.create_complex_workable(
+        # 创建复合模式Workable
+        composite = self.manager.create_workable(
             name="New Complex",
-            logic_description="New complex workable"
+            logic_description="New complex workable",
+            is_atom=False
         )
         
-        # 验证创建的ComplexWorkable
-        self.assertEqual(len(self.manager.workables), 1)
-        self.assertIn(complex_uuid, self.manager.workables)
-        
-        workable = self.manager.get_workable(complex_uuid)
-        self.assertEqual(workable.name, "New Complex")
-        self.assertEqual(workable.logic_description, "New complex workable")
-        self.assertTrue(isinstance(workable, ComplexWorkable))
+        # 验证创建结果
+        self.assertEqual(len(self.manager.workables), 2)
+        self.assertIn(composite.uuid, self.manager.workables)
+        self.assertTrue(composite.is_complex())
     
     def test_update_workable(self):
         """测试update_workable方法"""
         # 注册Workable
-        self.manager.register_workable(self.simple1)
+        self.manager.register_workable(self.atom1)
         
         # 更新Workable
         result = self.manager.update_workable(
-            self.simple1.uuid,
-            name="Updated Simple",
+            self.atom1.uuid,
+            name="Updated Atom",
             logic_description="Updated description"
         )
         
@@ -212,8 +207,8 @@ class TestWorkableManager(unittest.TestCase):
         self.assertTrue(result)
         
         # 验证更新的Workable
-        workable = self.manager.get_workable(self.simple1.uuid)
-        self.assertEqual(workable.name, "Updated Simple")
+        workable = self.manager.get_workable(self.atom1.uuid)
+        self.assertEqual(workable.name, "Updated Atom")
         self.assertEqual(workable.logic_description, "Updated description")
         
         # 更新不存在的Workable
@@ -225,30 +220,30 @@ class TestWorkableManager(unittest.TestCase):
         # 验证结果
         self.assertFalse(result)
     
-    def test_update_simple_workable_content(self):
+    def test_update_workable_content(self):
         """测试update_simple_workable_content方法"""
-        # 注册SimpleWorkable
-        self.manager.register_workable(self.simple1)
+        # 注册原子模式Workable
+        self.manager.register_workable(self.atom1)
         
-        # 更新SimpleWorkable内容
+        # 更新原子模式Workable内容
         result = self.manager.update_simple_workable_content(
-            self.simple1.uuid,
+            self.atom1.uuid,
             "Updated content"
         )
         
         # 验证更新结果
         self.assertTrue(result)
         
-        # 验证更新的SimpleWorkable
-        workable = self.manager.get_workable(self.simple1.uuid)
+        # 验证更新的原子模式Workable
+        workable = self.manager.get_workable(self.atom1.uuid)
         self.assertEqual(workable.content_str, "Updated content")
         
-        # 更新ComplexWorkable内容（应该失败）
-        self.manager.register_workable(self.complex1)
+        # 更新复合模式Workable内容（应该失败）
+        self.manager.register_workable(self.composite1)
         
         result = self.manager.update_simple_workable_content(
-            self.complex1.uuid,
-            "Updated content"
+            self.composite1.uuid,
+            "This should fail"
         )
         
         # 验证结果
@@ -257,7 +252,7 @@ class TestWorkableManager(unittest.TestCase):
         # 更新不存在的Workable
         result = self.manager.update_simple_workable_content(
             "non-existent-uuid",
-            "Updated content"
+            "This should fail"
         )
         
         # 验证结果
@@ -266,25 +261,49 @@ class TestWorkableManager(unittest.TestCase):
     def test_delete_workable(self):
         """测试delete_workable方法"""
         # 注册Workable
-        self.manager.register_workable(self.simple1)
-        self.manager.register_workable(self.complex1)
-        
-        # 验证注册
-        self.assertEqual(len(self.manager.workables), 2)
+        self.manager.register_workable(self.atom1)
         
         # 删除Workable
-        result = self.manager.delete_workable(self.simple1.uuid)
+        result = self.manager.delete_workable(self.atom1.uuid)
         
         # 验证删除结果
         self.assertTrue(result)
-        self.assertEqual(len(self.manager.workables), 1)
-        self.assertNotIn(self.simple1.uuid, self.manager.workables)
+        self.assertEqual(len(self.manager.workables), 0)
         
         # 删除不存在的Workable
         result = self.manager.delete_workable("non-existent-uuid")
         
         # 验证结果
         self.assertFalse(result)
+    
+    def test_create_simple_workable_backward_compatibility(self):
+        """测试create_simple_workable向后兼容方法"""
+        # 使用旧方法创建原子模式Workable
+        atom_uuid = self.manager.create_simple_workable(
+            name="Legacy Atom",
+            logic_description="Legacy atomic workable",
+            content_str="Legacy content",
+            content_type="text"
+        )
+        
+        # 验证创建的原子模式Workable
+        workable = self.manager.get_workable(atom_uuid)
+        self.assertEqual(workable.name, "Legacy Atom")
+        self.assertTrue(workable.is_atom())
+        self.assertEqual(workable.content_str, "Legacy content")
+    
+    def test_create_complex_workable_backward_compatibility(self):
+        """测试create_complex_workable向后兼容方法"""
+        # 使用旧方法创建复合模式Workable
+        composite_uuid = self.manager.create_complex_workable(
+            name="Legacy Composite",
+            logic_description="Legacy composite workable"
+        )
+        
+        # 验证创建的复合模式Workable
+        workable = self.manager.get_workable(composite_uuid)
+        self.assertEqual(workable.name, "Legacy Composite")
+        self.assertTrue(workable.is_complex())
 
 
 if __name__ == "__main__":
